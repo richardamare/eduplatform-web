@@ -1,20 +1,10 @@
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
+import { Folder, Plus } from 'lucide-react'
 
 import type { Workspace } from '@/types/workspace'
 
-import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
-} from '@/components/ui/sidebar'
-import { WorkspacesSidebar } from '@/components/workspaces-sidebar'
-import { Separator } from '@/components/ui/separator'
-import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbList,
-  BreadcrumbPage,
-} from '@/components/ui/breadcrumb'
+import { Card, CardContent } from '@/components/ui/card'
+import { mockWorkspaces } from '@/lib/mock-data'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -23,43 +13,62 @@ export const Route = createFileRoute('/')({
 function App() {
   const navigate = useNavigate()
 
-  const handleWorkspaceSelect = (workspace: Workspace) => {
-    navigate({ to: `/workspaces/${workspace.id}` })
+  const handleWorkspaceClick = (workspace: Workspace) => {
+    navigate({ to: `/w/${workspace.id}` })
+  }
+
+  const handleCreateWorkspace = () => {
+    // TODO: Implement create workspace functionality
+    console.log('Create new workspace')
   }
 
   return (
-    <SidebarProvider
-      style={
-        {
-          '--sidebar-width': '350px',
-        } as React.CSSProperties
-      }
-    >
-      <WorkspacesSidebar onWorkspaceSelect={handleWorkspaceSelect} />
-      <SidebarInset>
-        <header className="bg-background sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">
-          <SidebarTrigger className="-ml-1" />
-          <Separator
-            orientation="vertical"
-            className="mr-2 data-[orientation=vertical]:h-4"
-          />
-          <Breadcrumb>
-            <BreadcrumbList>
-              <BreadcrumbItem>
-                <BreadcrumbPage>Workspaces</BreadcrumbPage>
-              </BreadcrumbItem>
-            </BreadcrumbList>
-          </Breadcrumb>
-        </header>
-        <div className="flex flex-1 flex-col gap-4 p-4">
-          <div className="text-center py-8">
-            <h1 className="text-2xl font-bold">Select a Workspace</h1>
-            <p className="text-muted-foreground mt-2">
-              Choose a workspace from the sidebar to get started
-            </p>
-          </div>
+    <div className="min-h-screen bg-background">
+      <main className="container mx-auto py-12">
+        <div className="mb-12">
+          <h1 className="text-4xl font-bold tracking-tight mb-4">Workspaces</h1>
+          <p className="text-xl text-muted-foreground">
+            Select a workspace to continue learning
+          </p>
         </div>
-      </SidebarInset>
-    </SidebarProvider>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+          {mockWorkspaces.map((workspace) => (
+            <Card
+              key={workspace.id}
+              className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1"
+              onClick={() => handleWorkspaceClick(workspace)}
+            >
+              <CardContent className="p-8 text-center">
+                <div className="mb-6">
+                  <div className="w-16 h-16 mx-auto bg-blue-100 rounded-2xl flex items-center justify-center">
+                    <Folder className="w-8 h-8 text-blue-600" />
+                  </div>
+                </div>
+                <h3 className="text-lg font-semibold leading-snug">
+                  {workspace.name}
+                </h3>
+              </CardContent>
+            </Card>
+          ))}
+
+          <Card
+            className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1 border-2 border-dashed border-muted-foreground/30 hover:border-primary/50"
+            onClick={handleCreateWorkspace}
+          >
+            <CardContent className="p-8 text-center">
+              <div className="mb-6">
+                <div className="w-16 h-16 mx-auto border-2 border-dashed border-muted-foreground/50 rounded-2xl flex items-center justify-center hover:border-primary/50 transition-colors">
+                  <Plus className="w-8 h-8 text-muted-foreground" />
+                </div>
+              </div>
+              <h3 className="text-lg font-semibold leading-snug text-muted-foreground">
+                Add Workspace
+              </h3>
+            </CardContent>
+          </Card>
+        </div>
+      </main>
+    </div>
   )
 }
