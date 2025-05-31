@@ -4,6 +4,7 @@ import {
   AIMessageAvatar,
   AIMessageContent,
 } from '@/components/ui/kibo-ui/ai/message'
+import { AIResponse } from '@/components/ui/kibo-ui/ai/response'
 
 interface MessageListProps {
   messages: Array<Message>
@@ -17,7 +18,11 @@ export const MessageList = ({ messages }: MessageListProps) => {
           key={index}
           from={message.role === 'user' ? 'user' : 'assistant'}
         >
-          <AIMessageContent>{content}</AIMessageContent>
+          {message.role === 'user' ? (
+            <AIMessageContent>{content}</AIMessageContent>
+          ) : (
+            <AIResponse>{content}</AIResponse>
+          )}
           <AIMessageAvatar
             src={
               message.role === 'user'

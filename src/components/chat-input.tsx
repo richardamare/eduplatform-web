@@ -14,11 +14,13 @@ import {
   AIInputToolbar,
   AIInputTools,
 } from '@/components/ui/kibo-ui/ai/input'
+import { cn } from '@/lib/utils'
 
 interface ChatInputProps {
   onSend?: (message: string) => void
   disabled?: boolean
   placeholder?: string
+  className?: string
 }
 
 const models = [
@@ -37,6 +39,7 @@ export const ChatInput = ({
   onSend,
   disabled = false,
   placeholder = 'What would you like to know?',
+  className,
 }: ChatInputProps) => {
   const [selectedModel, setSelectedModel] = useState<string>(models[0].id)
 
@@ -53,7 +56,7 @@ export const ChatInput = ({
   }
 
   return (
-    <AIInput onSubmit={handleSubmit}>
+    <AIInput onSubmit={handleSubmit} className={cn(className)}>
       <AIInputTextarea placeholder={placeholder} disabled={disabled} />
       <AIInputToolbar>
         <AIInputTools>

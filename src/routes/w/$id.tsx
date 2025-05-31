@@ -24,10 +24,14 @@ export const Route = createFileRoute('/w/$id')({
 })
 
 function WorkspaceDetail() {
-  const { id } = Route.useParams()
+  const { id, ...params } = Route.useParams()
 
   const workspace = mockWorkspaces.find((w) => w.id === id)
   const workspaceChats = workspace ? getChatsByWorkspaceId(workspace.id) : []
+  const selectedChat = workspaceChats.find((c) => {
+    if (!(params as any).chatId) return false
+    return c.id === (params as any).chatId
+  })
 
   if (!workspace) {
     return (
@@ -53,13 +57,13 @@ function WorkspaceDetail() {
       <ChatsSidebar workspace={workspace} chats={workspaceChats} />
 
       <SidebarInset>
-        <header className="bg-background sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">
+        <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">
           <SidebarTrigger className="-ml-1" />
           <Separator
             orientation="vertical"
             className="mr-2 data-[orientation=vertical]:h-4"
           />
-          <Breadcrumb>
+          <Breadcrumb className="z-50">
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
@@ -70,6 +74,14 @@ function WorkspaceDetail() {
               <BreadcrumbItem>
                 <BreadcrumbPage>{workspace.name}</BreadcrumbPage>
               </BreadcrumbItem>
+              {selectedChat && (
+                <>
+                  <BreadcrumbSeparator />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>{selectedChat.name}</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </>
+              )}
             </BreadcrumbList>
           </Breadcrumb>
           <div className="ml-auto">
