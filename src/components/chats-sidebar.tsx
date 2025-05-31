@@ -1,4 +1,5 @@
 import { Home, MessageSquare, Plus } from 'lucide-react'
+import { Link, useLocation } from '@tanstack/react-router'
 import type { Workspace } from '@/types/workspace'
 import type { Chat, ChatId } from '@/types/chat'
 import { Button } from '@/components/ui/button'
@@ -13,34 +14,29 @@ import {
   SidebarMenuItem,
 } from '@/components/ui/sidebar'
 
-type SelectedView = 'overview' | 'newChat' | `chat-${typeof ChatId.Type}`
-
 interface ChatsSidebarProps {
   workspace: Workspace
-  selectedView: SelectedView
   chats: Array<Chat>
-  onSelect: (chat?: Chat) => void
-  onNewChat: () => void
 }
 
-export function ChatsSidebar({
-  workspace,
-  selectedView,
-  chats,
-  onSelect,
-  onNewChat,
-}: ChatsSidebarProps) {
-  const handleChatSelect = (chat: Chat) => {
-    onSelect(chat)
-  }
+export function ChatsSidebar({ workspace, chats }: ChatsSidebarProps) {
+  const location = useLocation()
+
+  // Determine active states based on current location
+  const isOverviewActive =
+    location.pathname === `/w/${workspace.id}` ||
+    location.pathname === `/w/${workspace.id}/`
+  const isNewChatActive = location.pathname === `/w/${workspace.id}/c/new`
 
   return (
     <Sidebar collapsible="offcanvas">
       <SidebarHeader className="p-4">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold truncate">{workspace.name}</h2>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Plus className="h-4 w-4" />
+          <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+            <Link to="/w/$id/c/new" params={{ id: workspace.id }}>
+              <Plus className="h-4 w-4" />
+            </Link>
           </Button>
         </div>
       </SidebarHeader>
@@ -50,22 +46,26 @@ export function ChatsSidebar({
             <SidebarMenu>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  isActive={selectedView === 'overview'}
-                  onClick={() => onSelect()}
+                  isActive={isOverviewActive}
                   className="w-full justify-start"
+                  asChild
                 >
-                  <Home className="h-4 w-4" />
-                  <span>Overview</span>
+                  <Link to="/w/$id" params={{ id: workspace.id }}>
+                    <Home className="h-4 w-4" />
+                    <span>Overview</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
                 <SidebarMenuButton
-                  isActive={selectedView === 'newChat'}
-                  onClick={() => onNewChat()}
+                  isActive={isNewChatActive}
                   className="w-full justify-start"
+                  asChild
                 >
-                  <Plus className="h-4 w-4" />
-                  <span>New Chat</span>
+                  <Link to="/w/$id/c/new" params={{ id: workspace.id }}>
+                    <Plus className="h-4 w-4" />
+                    <span>New Chat</span>
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
             </SidebarMenu>
@@ -81,18 +81,28 @@ export function ChatsSidebar({
             </div>
             <SidebarMenu>
               {chats.length > 0 ? (
-                chats.map((chat) => (
-                  <SidebarMenuItem key={chat.id}>
-                    <SidebarMenuButton
-                      isActive={selectedView === `chat-${chat.id}`}
-                      onClick={() => handleChatSelect(chat)}
-                      className="w-full justify-start"
-                    >
-                      <MessageSquare className="h-4 w-4" />
-                      <span className="truncate">{chat.name}</span>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))
+                chats.map((chat) => {
+                  const isChatActive =
+                    location.pathname === `/w/${workspace.id}/c/${chat.id}`
+
+                  return (
+                    <SidebarMenuItem key={chat.id}>
+                      <SidebarMenuButton
+                        isActive={isChatActive}
+                        className="w-full justify-start"
+                        asChild
+                      >
+                        <Link
+                          to="/w/$id/c/$chatId"
+                          params={{ id: workspace.id, chatId: chat.id }}
+                        >
+                          <MessageSquare className="h-4 w-4" />
+                          <span className="truncate">{chat.name}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  )
+                })
               ) : (
                 <div className="px-2 py-4 text-center text-sm text-muted-foreground">
                   No chats in this workspace

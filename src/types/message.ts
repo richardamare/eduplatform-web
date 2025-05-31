@@ -6,7 +6,6 @@ export const MessageId = Schema.String.pipe(Schema.brand('MessageId'))
 export enum MessageRole {
   USER = 'user',
   ASSISTANT = 'assistant',
-  SYSTEM = 'system',
 }
 
 export class Message extends Schema.TaggedClass<Message>('Message')('Message', {

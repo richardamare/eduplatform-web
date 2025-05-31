@@ -15,6 +15,12 @@ import {
   AIInputTools,
 } from '@/components/ui/kibo-ui/ai/input'
 
+interface ChatInputProps {
+  onSend?: (message: string) => void
+  disabled?: boolean
+  placeholder?: string
+}
+
 const models = [
   { id: 'gpt-4', name: 'GPT-4' },
   { id: 'gpt-3.5-turbo', name: 'GPT-3.5 Turbo' },
@@ -27,19 +33,28 @@ const models = [
   { id: 'mistral-7b', name: 'Mistral 7B' },
 ]
 
-export const ChatInput = () => {
+export const ChatInput = ({
+  onSend,
+  disabled = false,
+  placeholder = 'What would you like to know?',
+}: ChatInputProps) => {
   const [selectedModel, setSelectedModel] = useState<string>(models[0].id)
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault()
     const formData = new FormData(event.currentTarget)
-    const message = formData.get('message')
-    console.log('Submitted message:', message)
+    const message = formData.get('message') as string
+
+    if (message && message.trim() && onSend) {
+      onSend(message.trim())
+      // Reset the form
+      event.currentTarget.reset()
+    }
   }
 
   return (
     <AIInput onSubmit={handleSubmit}>
-      <AIInputTextarea />
+      <AIInputTextarea placeholder={placeholder} disabled={disabled} />
       <AIInputToolbar>
         <AIInputTools>
           <AIInputButton>
@@ -68,7 +83,7 @@ export const ChatInput = () => {
             </AIInputModelSelectContent>
           </AIInputModelSelect>
         </AIInputTools>
-        <AIInputSubmit>
+        <AIInputSubmit disabled={disabled}>
           <SendIcon size={16} />
         </AIInputSubmit>
       </AIInputToolbar>

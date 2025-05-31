@@ -12,7 +12,10 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as WorkspacesIdImport } from './routes/workspaces.$id'
+import { Route as WIdImport } from './routes/w/$id'
+import { Route as WIdIndexImport } from './routes/w/$id.index'
+import { Route as WIdCNewImport } from './routes/w/$id.c/new'
+import { Route as WIdCChatIdImport } from './routes/w/$id.c/$chatId'
 
 // Create/Update Routes
 
@@ -22,10 +25,28 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const WorkspacesIdRoute = WorkspacesIdImport.update({
-  id: '/workspaces/$id',
-  path: '/workspaces/$id',
+const WIdRoute = WIdImport.update({
+  id: '/w/$id',
+  path: '/w/$id',
   getParentRoute: () => rootRoute,
+} as any)
+
+const WIdIndexRoute = WIdIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => WIdRoute,
+} as any)
+
+const WIdCNewRoute = WIdCNewImport.update({
+  id: '/c/new',
+  path: '/c/new',
+  getParentRoute: () => WIdRoute,
+} as any)
+
+const WIdCChatIdRoute = WIdCChatIdImport.update({
+  id: '/c/$chatId',
+  path: '/c/$chatId',
+  getParentRoute: () => WIdRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -39,51 +60,100 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexImport
       parentRoute: typeof rootRoute
     }
-    '/workspaces/$id': {
-      id: '/workspaces/$id'
-      path: '/workspaces/$id'
-      fullPath: '/workspaces/$id'
-      preLoaderRoute: typeof WorkspacesIdImport
+    '/w/$id': {
+      id: '/w/$id'
+      path: '/w/$id'
+      fullPath: '/w/$id'
+      preLoaderRoute: typeof WIdImport
       parentRoute: typeof rootRoute
+    }
+    '/w/$id/': {
+      id: '/w/$id/'
+      path: '/'
+      fullPath: '/w/$id/'
+      preLoaderRoute: typeof WIdIndexImport
+      parentRoute: typeof WIdImport
+    }
+    '/w/$id/c/$chatId': {
+      id: '/w/$id/c/$chatId'
+      path: '/c/$chatId'
+      fullPath: '/w/$id/c/$chatId'
+      preLoaderRoute: typeof WIdCChatIdImport
+      parentRoute: typeof WIdImport
+    }
+    '/w/$id/c/new': {
+      id: '/w/$id/c/new'
+      path: '/c/new'
+      fullPath: '/w/$id/c/new'
+      preLoaderRoute: typeof WIdCNewImport
+      parentRoute: typeof WIdImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface WIdRouteChildren {
+  WIdIndexRoute: typeof WIdIndexRoute
+  WIdCChatIdRoute: typeof WIdCChatIdRoute
+  WIdCNewRoute: typeof WIdCNewRoute
+}
+
+const WIdRouteChildren: WIdRouteChildren = {
+  WIdIndexRoute: WIdIndexRoute,
+  WIdCChatIdRoute: WIdCChatIdRoute,
+  WIdCNewRoute: WIdCNewRoute,
+}
+
+const WIdRouteWithChildren = WIdRoute._addFileChildren(WIdRouteChildren)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/workspaces/$id': typeof WorkspacesIdRoute
+  '/w/$id': typeof WIdRouteWithChildren
+  '/w/$id/': typeof WIdIndexRoute
+  '/w/$id/c/$chatId': typeof WIdCChatIdRoute
+  '/w/$id/c/new': typeof WIdCNewRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/workspaces/$id': typeof WorkspacesIdRoute
+  '/w/$id': typeof WIdIndexRoute
+  '/w/$id/c/$chatId': typeof WIdCChatIdRoute
+  '/w/$id/c/new': typeof WIdCNewRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/workspaces/$id': typeof WorkspacesIdRoute
+  '/w/$id': typeof WIdRouteWithChildren
+  '/w/$id/': typeof WIdIndexRoute
+  '/w/$id/c/$chatId': typeof WIdCChatIdRoute
+  '/w/$id/c/new': typeof WIdCNewRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/workspaces/$id'
+  fullPaths: '/' | '/w/$id' | '/w/$id/' | '/w/$id/c/$chatId' | '/w/$id/c/new'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/workspaces/$id'
-  id: '__root__' | '/' | '/workspaces/$id'
+  to: '/' | '/w/$id' | '/w/$id/c/$chatId' | '/w/$id/c/new'
+  id:
+    | '__root__'
+    | '/'
+    | '/w/$id'
+    | '/w/$id/'
+    | '/w/$id/c/$chatId'
+    | '/w/$id/c/new'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  WorkspacesIdRoute: typeof WorkspacesIdRoute
+  WIdRoute: typeof WIdRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  WorkspacesIdRoute: WorkspacesIdRoute,
+  WIdRoute: WIdRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -97,14 +167,31 @@ export const routeTree = rootRoute
       "filePath": "__root.tsx",
       "children": [
         "/",
-        "/workspaces/$id"
+        "/w/$id"
       ]
     },
     "/": {
       "filePath": "index.tsx"
     },
-    "/workspaces/$id": {
-      "filePath": "workspaces.$id.tsx"
+    "/w/$id": {
+      "filePath": "w/$id.tsx",
+      "children": [
+        "/w/$id/",
+        "/w/$id/c/$chatId",
+        "/w/$id/c/new"
+      ]
+    },
+    "/w/$id/": {
+      "filePath": "w/$id.index.tsx",
+      "parent": "/w/$id"
+    },
+    "/w/$id/c/$chatId": {
+      "filePath": "w/$id.c/$chatId.tsx",
+      "parent": "/w/$id"
+    },
+    "/w/$id/c/new": {
+      "filePath": "w/$id.c/new.tsx",
+      "parent": "/w/$id"
     }
   }
 }
