@@ -10,16 +10,7 @@ interface ChatDetailProps {
 }
 
 export const ChatDetail = ({ chat }: ChatDetailProps) => {
-  const {
-    messages,
-    append,
-    isLoading,
-    status,
-    input,
-    setInput,
-    handleInputChange,
-    handleSubmit,
-  } = useChat({
+  const { messages, append, isLoading, status } = useChat({
     id: chat.id,
   })
 
