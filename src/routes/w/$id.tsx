@@ -56,7 +56,7 @@ function WorkspaceDetail() {
     >
       <ChatsSidebar workspace={workspace} chats={workspaceChats} />
 
-      <SidebarInset>
+      <SidebarInset className="max-h-screen h-full overflow-hidden">
         <header className="bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 flex shrink-0 items-center gap-2 border-b p-4">
           <SidebarTrigger className="-ml-1" />
           <Separator

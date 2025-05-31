@@ -5,6 +5,8 @@ import type { Workspace } from '@/types/workspace'
 
 import { Card, CardContent } from '@/components/ui/card'
 import { mockWorkspaces } from '@/lib/mock-data'
+import { useModal } from '@/hooks/use-modal'
+import { MODAL_TYPE } from '@/types/modal'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -12,14 +14,14 @@ export const Route = createFileRoute('/')({
 
 function App() {
   const navigate = useNavigate()
+  const openModal = useModal((s) => s.open)
 
   const handleWorkspaceClick = (workspace: Workspace) => {
     navigate({ to: `/w/${workspace.id}` })
   }
 
   const handleCreateWorkspace = () => {
-    // TODO: Implement create workspace functionality
-    console.log('Create new workspace')
+    openModal({ type: MODAL_TYPE.CREATE_WORKSPACE, props: {} })
   }
 
   return (

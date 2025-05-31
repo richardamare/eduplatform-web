@@ -8,6 +8,7 @@ import { routeTree } from './routeTree.gen'
 
 import './styles.css'
 import reportWebVitals from './reportWebVitals.ts'
+import { ModalProvider } from '@/components/model-provider.tsx'
 
 // Create QueryClient
 const queryClient = new QueryClient({
@@ -43,6 +44,7 @@ if (rootElement && !rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <QueryClientProvider client={queryClient}>
+        <ModalProvider />
         <RouterProvider router={router} />
       </QueryClientProvider>
     </StrictMode>,
