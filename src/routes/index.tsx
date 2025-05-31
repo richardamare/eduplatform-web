@@ -7,6 +7,7 @@ import { Card, CardContent } from '@/components/ui/card'
 import { mockWorkspaces } from '@/lib/mock-data'
 import { useModal } from '@/hooks/use-modal'
 import { MODAL_TYPE } from '@/types/modal'
+import { WorkspaceQueries } from '@/data-access/workspace'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -15,6 +16,9 @@ export const Route = createFileRoute('/')({
 function App() {
   const navigate = useNavigate()
   const openModal = useModal((s) => s.open)
+
+  const workspacesQuery = WorkspaceQueries.useWorkspaces()
+  const workspaces = workspacesQuery.data ?? []
 
   const handleWorkspaceClick = (workspace: Workspace) => {
     navigate({ to: `/w/${workspace.id}` })
@@ -35,7 +39,7 @@ function App() {
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-          {mockWorkspaces.map((workspace) => (
+          {workspaces.map((workspace) => (
             <Card
               key={workspace.id}
               className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:-translate-y-1"

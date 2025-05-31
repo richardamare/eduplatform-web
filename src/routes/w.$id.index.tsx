@@ -1,5 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { getChatsByWorkspaceId, mockWorkspaces } from '@/lib/mock-data'
+import { WorkspaceQueries } from '@/data-access/workspace'
+import { ChatQueries } from '@/data-access/chat'
+import { WorkspaceId } from '@/types/workspace'
 
 export const Route = createFileRoute('/w/$id/')({
   component: WorkspaceOverview,
@@ -8,8 +10,15 @@ export const Route = createFileRoute('/w/$id/')({
 function WorkspaceOverview() {
   const { id } = Route.useParams()
 
-  const workspace = mockWorkspaces.find((w) => w.id === id)
-  const workspaceChats = workspace ? getChatsByWorkspaceId(workspace.id) : []
+  const workspaceQuery = WorkspaceQueries.useWorkspaceDetail(
+    WorkspaceId.make(id),
+  )
+  const workspace = workspaceQuery.data
+
+  const chatsQuery = ChatQueries.useChats(WorkspaceId.make(id), {
+    enabled: !!workspace?.id,
+  })
+  const chats = chatsQuery.data ?? []
 
   if (!workspace) {
     return (
@@ -31,9 +40,7 @@ function WorkspaceOverview() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           <div className="p-4 border rounded-lg">
             <h3 className="font-semibold">Total Chats</h3>
-            <p className="text-2xl font-bold text-blue-600">
-              {workspaceChats.length}
-            </p>
+            <p className="text-2xl font-bold text-blue-600">{chats.length}</p>
           </div>
           <div className="p-4 border rounded-lg">
             <h3 className="font-semibold">Created</h3>
