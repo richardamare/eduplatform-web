@@ -1,7 +1,7 @@
 import { Home, MessageSquare, Plus } from 'lucide-react'
 import { Link, useLocation } from '@tanstack/react-router'
 import type { Workspace } from '@/types/workspace'
-import type { Chat, ChatId } from '@/types/chat'
+import type { Chat } from '@/types/chat'
 import { Button } from '@/components/ui/button'
 import {
   Sidebar,

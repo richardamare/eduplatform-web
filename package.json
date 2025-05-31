@@ -39,6 +39,7 @@
     "lucide-react": "^0.476.0",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
+    "react-dropzone": "^14.3.8",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
     "shiki": "^3.4.2",

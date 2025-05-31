@@ -12,10 +12,10 @@
 
 import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
-import { Route as WIdImport } from './routes/w/$id'
-import { Route as WIdIndexImport } from './routes/w/$id.index'
-import { Route as WIdCNewImport } from './routes/w/$id.c/new'
-import { Route as WIdCChatIdImport } from './routes/w/$id.c/$chatId'
+import { Route as WIdImport } from './routes/w.$id'
+import { Route as WIdIndexImport } from './routes/w.$id.index'
+import { Route as WIdCNewImport } from './routes/w.$id.c.new'
+import { Route as WIdCChatIdImport } from './routes/w.$id.c.$chatId'
 
 // Create/Update Routes
 
@@ -174,7 +174,7 @@ export const routeTree = rootRoute
       "filePath": "index.tsx"
     },
     "/w/$id": {
-      "filePath": "w/$id.tsx",
+      "filePath": "w.$id.tsx",
       "children": [
         "/w/$id/",
         "/w/$id/c/$chatId",
@@ -182,15 +182,15 @@ export const routeTree = rootRoute
       ]
     },
     "/w/$id/": {
-      "filePath": "w/$id.index.tsx",
+      "filePath": "w.$id.index.tsx",
       "parent": "/w/$id"
     },
     "/w/$id/c/$chatId": {
-      "filePath": "w/$id.c/$chatId.tsx",
+      "filePath": "w.$id.c.$chatId.tsx",
       "parent": "/w/$id"
     },
     "/w/$id/c/new": {
-      "filePath": "w/$id.c/new.tsx",
+      "filePath": "w.$id.c.new.tsx",
       "parent": "/w/$id"
     }
   }

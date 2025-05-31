@@ -1,20 +1,19 @@
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
-import type { Chat } from '@/types/chat'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
-  SidebarInset,
-  SidebarProvider,
-  SidebarTrigger,
+    SidebarInset,
+    SidebarProvider,
+    SidebarTrigger,
 } from '@/components/ui/sidebar'
 import {
-  Breadcrumb,
-  BreadcrumbItem,
-  BreadcrumbLink,
-  BreadcrumbList,
-  BreadcrumbPage,
-  BreadcrumbSeparator,
+    Breadcrumb,
+    BreadcrumbItem,
+    BreadcrumbLink,
+    BreadcrumbList,
+    BreadcrumbPage,
+    BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
 import { getChatsByWorkspaceId, mockWorkspaces } from '@/lib/mock-data'
 import { ChatsSidebar } from '@/components/chats-sidebar'
