@@ -1,22 +1,25 @@
 import { Link, Outlet, createFileRoute } from '@tanstack/react-router'
 import { ArrowLeft } from 'lucide-react'
+import { useMemo } from 'react'
 import { Button } from '@/components/ui/button'
 import { Separator } from '@/components/ui/separator'
 import {
-    SidebarInset,
-    SidebarProvider,
-    SidebarTrigger,
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
 } from '@/components/ui/sidebar'
 import {
-    Breadcrumb,
-    BreadcrumbItem,
-    BreadcrumbLink,
-    BreadcrumbList,
-    BreadcrumbPage,
-    BreadcrumbSeparator,
+  Breadcrumb,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbList,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
 } from '@/components/ui/breadcrumb'
-import { getChatsByWorkspaceId, mockWorkspaces } from '@/lib/mock-data'
 import { ChatsSidebar } from '@/components/chats-sidebar'
+import { WorkspaceQueries } from '@/data-access/workspace-queries'
+import { WorkspaceId } from '@/types/workspace'
+import { ChatQueries } from '@/data-access/chat-queries'
 
 export const Route = createFileRoute('/w/$id')({
   component: WorkspaceDetail,
@@ -24,13 +27,15 @@ export const Route = createFileRoute('/w/$id')({
 
 function WorkspaceDetail() {
   const { id, ...params } = Route.useParams()
+  const workspaceIdTyped = WorkspaceId.make(id)
 
-  const workspace = mockWorkspaces.find((w) => w.id === id)
-  const workspaceChats = workspace ? getChatsByWorkspaceId(workspace.id) : []
-  const selectedChat = workspaceChats.find((c) => {
+  const { data: workspace } = WorkspaceQueries.useWorkspace(workspaceIdTyped)
+  const { data: workspaceChats = [] } = ChatQueries.useChats(workspaceIdTyped)
+
+  const selectedChat = useMemo(() => {
     if (!(params as any).chatId) return false
-    return c.id === (params as any).chatId
-  })
+    return workspaceChats?.find((c) => c.id === (params as any).chatId)
+  }, [workspaceChats, params])
 
   if (!workspace) {
     return (

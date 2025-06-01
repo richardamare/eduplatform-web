@@ -11,52 +11,111 @@ import {
   type WorkspaceId,
 } from '@/types/workspace'
 
-// API functions (replace with actual API calls)
+const API_BASE_URL = 'http://localhost:5131/api'
+
+// API Response types
+interface WorkspaceResponse {
+  id: string
+  name: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface CreateWorkspaceRequest {
+  name: string
+}
+
+interface UpdateWorkspaceRequest {
+  name: string
+}
+
+// API functions
 const workspaceApi = {
   async getWorkspaces(): Promise<Array<Workspace>> {
-    // Simulate API call - replace with actual API
-    await new Promise((resolve) => setTimeout(resolve, 500))
+    const response = await fetch(`${API_BASE_URL}/workspaces`)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch workspaces: ${response.statusText}`)
+    }
 
-    // Mock data - replace with actual API call
-    return [
-      new Workspace({
-        id: 'ws_1' as WorkspaceId,
-        name: 'My First Workspace',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-      new Workspace({
-        id: 'ws_2' as WorkspaceId,
-        name: 'Learning Hub',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    ]
+    const workspaces: Array<WorkspaceResponse> = await response.json()
+    return workspaces.map(
+      (workspace) =>
+        new Workspace({
+          id: workspace.id as WorkspaceId,
+          name: workspace.name,
+          createdAt: new Date(workspace.createdAt),
+          updatedAt: new Date(workspace.updatedAt),
+        }),
+    )
   },
 
   async createWorkspace(payload: CreateWorkspacePayload): Promise<Workspace> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 1000))
+    const response = await fetch(`${API_BASE_URL}/workspaces`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name: payload.name }),
+    })
 
+    if (!response.ok) {
+      throw new Error(`Failed to create workspace: ${response.statusText}`)
+    }
+
+    const workspace: WorkspaceResponse = await response.json()
     return new Workspace({
-      id: `ws_${Date.now()}` as WorkspaceId,
-      name: payload.name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      id: workspace.id as WorkspaceId,
+      name: workspace.name,
+      createdAt: new Date(workspace.createdAt),
+      updatedAt: new Date(workspace.updatedAt),
     })
   },
 
   async getWorkspace(id: WorkspaceId): Promise<Workspace> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 300))
-
-    // Mock implementation - replace with actual API
-    const workspaces = await this.getWorkspaces()
-    const workspace = workspaces.find((w) => w.id === id)
-    if (!workspace) {
-      throw new Error(`Workspace with id ${id} not found`)
+    const response = await fetch(`${API_BASE_URL}/workspaces/${id}`)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch workspace: ${response.statusText}`)
     }
-    return workspace
+
+    const workspace: WorkspaceResponse = await response.json()
+    return new Workspace({
+      id: workspace.id as WorkspaceId,
+      name: workspace.name,
+      createdAt: new Date(workspace.createdAt),
+      updatedAt: new Date(workspace.updatedAt),
+    })
+  },
+
+  async updateWorkspace(id: WorkspaceId, name: string): Promise<Workspace> {
+    const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ name }),
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to update workspace: ${response.statusText}`)
+    }
+
+    const workspace: WorkspaceResponse = await response.json()
+    return new Workspace({
+      id: workspace.id as WorkspaceId,
+      name: workspace.name,
+      createdAt: new Date(workspace.createdAt),
+      updatedAt: new Date(workspace.updatedAt),
+    })
+  },
+
+  async deleteWorkspace(id: WorkspaceId): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
+      method: 'DELETE',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Failed to delete workspace: ${response.statusText}`)
+    }
   },
 }
 
@@ -83,6 +142,16 @@ export namespace WorkspaceQueries {
 
   export type CreateWorkspaceMutationOptions = Omit<
     UseMutationOptions<Workspace, Error, CreateWorkspacePayload>,
+    'mutationFn'
+  >
+
+  export type UpdateWorkspaceMutationOptions = Omit<
+    UseMutationOptions<Workspace, Error, { id: WorkspaceId; name: string }>,
+    'mutationFn'
+  >
+
+  export type DeleteWorkspaceMutationOptions = Omit<
+    UseMutationOptions<void, Error, WorkspaceId>,
     'mutationFn'
   >
 
@@ -137,7 +206,71 @@ export namespace WorkspaceQueries {
           newWorkspace,
         )
 
-        // Optionally invalidate to refetch
+        // Invalidate to refetch
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.lists(),
+        })
+      },
+      ...options,
+    })
+  }
+
+  export const useUpdateWorkspace = (
+    options?: UpdateWorkspaceMutationOptions,
+  ) => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+      mutationFn: ({ id, name }: { id: WorkspaceId; name: string }) =>
+        workspaceApi.updateWorkspace(id, name),
+      onSuccess: (updatedWorkspace) => {
+        // Update the workspaces list cache
+        queryClient.setQueryData<Array<Workspace>>(
+          queryKeys.lists(),
+          (oldWorkspaces = []) =>
+            oldWorkspaces.map((workspace) =>
+              workspace.id === updatedWorkspace.id
+                ? updatedWorkspace
+                : workspace,
+            ),
+        )
+
+        // Update the individual workspace cache
+        queryClient.setQueryData(
+          queryKeys.detail(updatedWorkspace.id),
+          updatedWorkspace,
+        )
+
+        // Invalidate to refetch
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.lists(),
+        })
+      },
+      ...options,
+    })
+  }
+
+  export const useDeleteWorkspace = (
+    options?: DeleteWorkspaceMutationOptions,
+  ) => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+      mutationFn: (id: WorkspaceId) => workspaceApi.deleteWorkspace(id),
+      onSuccess: (_, deletedId) => {
+        // Remove from workspaces list cache
+        queryClient.setQueryData<Array<Workspace>>(
+          queryKeys.lists(),
+          (oldWorkspaces = []) =>
+            oldWorkspaces.filter((workspace) => workspace.id !== deletedId),
+        )
+
+        // Remove individual workspace cache
+        queryClient.removeQueries({
+          queryKey: queryKeys.detail(deletedId),
+        })
+
+        // Invalidate to refetch
         queryClient.invalidateQueries({
           queryKey: queryKeys.lists(),
         })
@@ -195,5 +328,11 @@ export namespace WorkspaceQueries {
       invalidateWorkspace: (id: WorkspaceId) =>
         queryClient.invalidateQueries({ queryKey: queryKeys.detail(id) }),
     }
+  }
+
+  // Get default workspace
+  export const useDefaultWorkspace = () => {
+    const { data: workspaces } = useWorkspaces()
+    return workspaces?.[0] || null
   }
 }

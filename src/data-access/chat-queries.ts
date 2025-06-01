@@ -6,109 +6,116 @@ import {
   type UseMutationOptions,
 } from '@tanstack/react-query'
 import { Chat, type ChatId } from '@/types/chat'
-import {
-  Message,
-  type MessageId,
-  MessageRole,
-  type CreateMessagePayload,
-} from '@/types/message'
+import { Message, type MessageId, MessageRole } from '@/types/message'
 import { type WorkspaceId } from '@/types/workspace'
-import { mockChats } from '@/lib/mock-data'
 
-// API functions (replace with actual API calls)
+const API_BASE_URL = 'http://localhost:5131/api'
+
+// API Response types
+interface ChatResponse {
+  id: string
+  name: string
+  workspaceId: string
+  createdAt: string
+  updatedAt: string
+}
+
+interface MessageResponse {
+  id: string
+  content: string
+  role: 0 | 1
+  createdAt: string
+}
+
+// API functions
 const chatApi = {
   async getChats(workspaceId: WorkspaceId): Promise<Array<Chat>> {
-    // Simulate API call - replace with actual API
-    await new Promise((resolve) => setTimeout(resolve, 300))
+    const response = await fetch(
+      `${API_BASE_URL}/workspaces/${workspaceId}/chats`,
+    )
+    if (!response.ok) {
+      throw new Error(`Failed to fetch chats: ${response.statusText}`)
+    }
 
-    // Mock data - replace with actual API call
-    return [
-      new Chat({
-        id: `chat_${workspaceId}_1` as ChatId,
-        name: 'Getting Started',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-      new Chat({
-        id: `chat_${workspaceId}_2` as ChatId,
-        name: 'Advanced Topics',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      }),
-    ]
+    const chats: Array<ChatResponse> = await response.json()
+    return chats.map(
+      (chat) =>
+        new Chat({
+          id: chat.id as ChatId,
+          name: chat.name,
+          createdAt: new Date(chat.createdAt),
+          updatedAt: new Date(chat.updatedAt),
+        }),
+    )
   },
 
-  async createChat(workspaceId: WorkspaceId, name: string): Promise<Chat> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 800))
+  async createChat(workspaceId: WorkspaceId, name?: string): Promise<Chat> {
+    const response = await fetch(`${API_BASE_URL}/chats`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ workspaceId, name }),
+    })
 
+    if (!response.ok) {
+      throw new Error(`Failed to create chat: ${response.statusText}`)
+    }
+
+    const chat: ChatResponse = await response.json()
     return new Chat({
-      id: `chat_${workspaceId}_${Date.now()}` as ChatId,
-      name,
-      createdAt: new Date(),
-      updatedAt: new Date(),
+      id: chat.id as ChatId,
+      name: chat.name,
+      createdAt: new Date(chat.createdAt),
+      updatedAt: new Date(chat.updatedAt),
     })
   },
 
-  async getChat(chatId: ChatId): Promise<Chat> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 200))
-
-    // Mock implementation - replace with actual API
-    const chat = mockChats.find((chat) => chat.id === chatId)
+  async getChat(workspaceId: WorkspaceId, chatId: ChatId): Promise<Chat> {
+    // Get from the chats list since we don't have individual chat endpoint
+    const chats = await this.getChats(workspaceId)
+    const chat = chats.find((c) => c.id === chatId)
     if (!chat) {
-      throw new Error(`Chat with id ${chatId} not found`)
+      throw new Error(
+        `Chat with id ${chatId} not found in workspace ${workspaceId}`,
+      )
     }
     return chat
   },
 
-  async getMessages(chatId: ChatId): Promise<Array<Message>> {
-    // Simulate API call
-    await new Promise((resolve) => setTimeout(resolve, 200))
+  async getMessages(
+    workspaceId: WorkspaceId,
+    chatId: ChatId,
+  ): Promise<Array<Message>> {
+    const response = await fetch(`${API_BASE_URL}/chats/${chatId}/messages`)
+    if (!response.ok) {
+      throw new Error(`Failed to fetch messages: ${response.statusText}`)
+    }
 
-    // Mock messages
-    return [
-      new Message({
-        id: `msg_${chatId}_1` as MessageId,
-        content: 'Hello! How can I help you today?',
-        role: MessageRole.ASSISTANT,
-        createdAt: new Date(Date.now() - 60000),
-      }),
-      new Message({
-        id: `msg_${chatId}_2` as MessageId,
-        content: 'I need help with understanding React hooks.',
-        role: MessageRole.USER,
-        createdAt: new Date(Date.now() - 30000),
-      }),
-    ]
+    const messages: Array<MessageResponse> = await response.json()
+    return messages.map(
+      (msg) =>
+        new Message({
+          id: msg.id as MessageId,
+          content: msg.content,
+          role: msg.role === 0 ? MessageRole.USER : MessageRole.ASSISTANT,
+          createdAt: new Date(msg.createdAt),
+        }),
+    )
   },
 
-  async sendMessage(
-    chatId: ChatId,
-    content: string,
-    options?: { headers?: Record<string, string>; body?: object },
-  ): Promise<Message> {
-    // Add user message first
-    const userMessage = new Message({
-      id: `msg_${Date.now()}` as MessageId,
-      content,
-      role: MessageRole.USER,
-      createdAt: new Date(),
+  async deleteChat(workspaceId: WorkspaceId, chatId: ChatId): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/chats/${chatId}`, {
+      method: 'DELETE',
     })
 
-    // Simulate API call for response
-    await new Promise((resolve) => setTimeout(resolve, 1000))
-
-    // Return assistant response
-    return new Message({
-      id: `msg_${Date.now() + 1}` as MessageId,
-      content: `I understand you said: "${content}". How can I help you further?`,
-      role: MessageRole.ASSISTANT,
-      createdAt: new Date(),
-    })
+    if (!response.ok) {
+      throw new Error(`Failed to delete chat: ${response.statusText}`)
+    }
   },
 
   async streamMessage(
+    workspaceId: WorkspaceId,
     chatId: ChatId,
     content: string,
     onChunk: (chunk: string) => void,
@@ -117,14 +124,12 @@ const chatApi = {
     const assistantMessageId = `msg_${Date.now()}` as MessageId
 
     try {
-      const response = await fetch('http://localhost:5131/chat', {
+      const response = await fetch(`${API_BASE_URL}/chats/${chatId}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          message: content,
-        }),
+        body: JSON.stringify({ content }),
         ...(signal && { signal }),
       })
 
@@ -146,10 +151,7 @@ const chatApi = {
 
           if (done) break
 
-          // Decode the chunk as plain text
           const chunk = decoder.decode(value, { stream: true })
-
-          // Accumulate the content and call onChunk with the new total
           accumulatedContent += chunk
           onChunk(accumulatedContent)
         }
@@ -179,9 +181,17 @@ export namespace ChatQueries {
     lists: () => [...queryKeys.all, 'list'],
     list: (workspaceId: WorkspaceId) => [...queryKeys.lists(), workspaceId],
     details: () => [...queryKeys.all, 'detail'],
-    detail: (id: ChatId) => [...queryKeys.details(), id],
+    detail: (workspaceId: WorkspaceId, id: ChatId) => [
+      ...queryKeys.details(),
+      workspaceId,
+      id,
+    ],
     messages: () => [...queryKeys.all, 'messages'],
-    messagesList: (chatId: ChatId) => [...queryKeys.messages(), chatId],
+    messagesList: (workspaceId: WorkspaceId, chatId: ChatId) => [
+      ...queryKeys.messages(),
+      workspaceId,
+      chatId,
+    ],
   }
 
   // Types
@@ -201,19 +211,19 @@ export namespace ChatQueries {
   >
 
   export type CreateChatMutationOptions = Omit<
-    UseMutationOptions<Chat, Error, { workspaceId: WorkspaceId; name: string }>,
+    UseMutationOptions<
+      Chat,
+      Error,
+      { workspaceId: WorkspaceId; name?: string }
+    >,
     'mutationFn'
   >
 
-  export type SendMessageMutationOptions = Omit<
+  export type DeleteChatMutationOptions = Omit<
     UseMutationOptions<
-      { userMessage: Message; assistantMessage: Message },
+      void,
       Error,
-      {
-        chatId: ChatId
-        content: string
-        options?: { headers?: Record<string, string>; body?: object }
-      }
+      { workspaceId: WorkspaceId; chatId: ChatId }
     >,
     'mutationFn'
   >
@@ -222,7 +232,12 @@ export namespace ChatQueries {
     UseMutationOptions<
       Message,
       Error,
-      { chatId: ChatId; content: string; onChunk: (chunk: string) => void }
+      {
+        workspaceId: WorkspaceId
+        chatId: ChatId
+        content: string
+        onChunk: (chunk: string) => void
+      }
     >,
     'mutationFn'
   >
@@ -240,10 +255,14 @@ export namespace ChatQueries {
     })
   }
 
-  export const useChat = (chatId: ChatId, options?: ChatQueryOptions) => {
+  export const useChat = (
+    workspaceId: WorkspaceId,
+    chatId: ChatId,
+    options?: ChatQueryOptions,
+  ) => {
     return useQuery({
-      queryKey: queryKeys.detail(chatId),
-      queryFn: () => chatApi.getChat(chatId),
+      queryKey: queryKeys.detail(workspaceId, chatId),
+      queryFn: () => chatApi.getChat(workspaceId, chatId),
       staleTime: 5 * 60 * 1000,
       ...options,
     })
@@ -258,7 +277,7 @@ export namespace ChatQueries {
         name,
       }: {
         workspaceId: WorkspaceId
-        name: string
+        name?: string
       }) => chatApi.createChat(workspaceId, name),
       onSuccess: (newChat, { workspaceId }) => {
         // Update the chats list cache for this workspace
@@ -268,9 +287,18 @@ export namespace ChatQueries {
         )
 
         // Set the individual chat cache
-        queryClient.setQueryData(queryKeys.detail(newChat.id), newChat)
+        queryClient.setQueryData(
+          queryKeys.detail(workspaceId, newChat.id),
+          newChat,
+        )
 
-        // Optionally invalidate to refetch
+        // Initialize empty messages for the new chat
+        queryClient.setQueryData(
+          queryKeys.messagesList(workspaceId, newChat.id),
+          [],
+        )
+
+        // Invalidate to refetch
         queryClient.invalidateQueries({
           queryKey: queryKeys.list(workspaceId),
         })
@@ -279,60 +307,48 @@ export namespace ChatQueries {
     })
   }
 
-  // Message Hooks
-  export const useMessages = (
-    chatId: ChatId,
-    options?: MessagesQueryOptions,
-  ) => {
-    return useQuery({
-      queryKey: queryKeys.messagesList(chatId),
-      queryFn: () => chatApi.getMessages(chatId),
-      staleTime: 1 * 60 * 1000, // 1 minute
+  export const useDeleteChat = (options?: DeleteChatMutationOptions) => {
+    const queryClient = useQueryClient()
+
+    return useMutation({
+      mutationFn: ({
+        workspaceId,
+        chatId,
+      }: {
+        workspaceId: WorkspaceId
+        chatId: ChatId
+      }) => chatApi.deleteChat(workspaceId, chatId),
+      onSuccess: (_, { workspaceId, chatId }) => {
+        // Remove from chats list cache
+        queryClient.setQueryData<Array<Chat>>(
+          queryKeys.list(workspaceId),
+          (oldChats = []) => oldChats.filter((chat) => chat.id !== chatId),
+        )
+
+        // Remove individual chat cache
+        queryClient.removeQueries({
+          queryKey: queryKeys.detail(workspaceId, chatId),
+        })
+
+        // Remove messages cache
+        queryClient.removeQueries({
+          queryKey: queryKeys.messagesList(workspaceId, chatId),
+        })
+      },
       ...options,
     })
   }
 
-  export const useSendMessage = (options?: SendMessageMutationOptions) => {
-    const queryClient = useQueryClient()
-
-    return useMutation({
-      mutationFn: async ({ chatId, content, options: requestOptions }) => {
-        // Create user message immediately
-        const userMessage = new Message({
-          id: `msg_${Date.now()}` as MessageId,
-          content,
-          role: MessageRole.USER,
-          createdAt: new Date(),
-        })
-
-        // Add user message to cache optimistically
-        queryClient.setQueryData<Array<Message>>(
-          queryKeys.messagesList(chatId),
-          (oldMessages = []) => [...oldMessages, userMessage],
-        )
-
-        // Send message and get assistant response
-        const assistantMessage = await chatApi.sendMessage(
-          chatId,
-          content,
-          requestOptions,
-        )
-
-        return { userMessage, assistantMessage }
-      },
-      onSuccess: ({ assistantMessage }, { chatId }) => {
-        // Add assistant message to cache
-        queryClient.setQueryData<Array<Message>>(
-          queryKeys.messagesList(chatId),
-          (oldMessages = []) => [...oldMessages, assistantMessage],
-        )
-      },
-      onError: (error, { chatId }) => {
-        // Optionally remove the optimistic user message on error
-        queryClient.invalidateQueries({
-          queryKey: queryKeys.messagesList(chatId),
-        })
-      },
+  // Message Hooks
+  export const useMessages = (
+    workspaceId: WorkspaceId,
+    chatId: ChatId,
+    options?: MessagesQueryOptions,
+  ) => {
+    return useQuery({
+      queryKey: queryKeys.messagesList(workspaceId, chatId),
+      queryFn: () => chatApi.getMessages(workspaceId, chatId),
+      staleTime: 1 * 60 * 1000, // 1 minute
       ...options,
     })
   }
@@ -341,7 +357,7 @@ export namespace ChatQueries {
     const queryClient = useQueryClient()
 
     return useMutation({
-      mutationFn: async ({ chatId, content, onChunk }) => {
+      mutationFn: async ({ workspaceId, chatId, content, onChunk }) => {
         // Create user message immediately
         const userMessage = new Message({
           id: `msg_${Date.now()}` as MessageId,
@@ -352,7 +368,7 @@ export namespace ChatQueries {
 
         // Add user message to cache
         queryClient.setQueryData<Array<Message>>(
-          queryKeys.messagesList(chatId),
+          queryKeys.messagesList(workspaceId, chatId),
           (oldMessages = []) => [...oldMessages, userMessage],
         )
 
@@ -367,18 +383,19 @@ export namespace ChatQueries {
 
         // Add empty assistant message
         queryClient.setQueryData<Array<Message>>(
-          queryKeys.messagesList(chatId),
+          queryKeys.messagesList(workspaceId, chatId),
           (oldMessages = []) => [...oldMessages, initialAssistantMessage],
         )
 
         // Stream response and update incrementally
         const finalMessage = await chatApi.streamMessage(
+          workspaceId,
           chatId,
           content,
           (chunk) => {
             // Update assistant message with accumulated content
             queryClient.setQueryData<Array<Message>>(
-              queryKeys.messagesList(chatId),
+              queryKeys.messagesList(workspaceId, chatId),
               (oldMessages = []) =>
                 oldMessages.map((msg) =>
                   msg.id === assistantMessageId
@@ -392,6 +409,14 @@ export namespace ChatQueries {
 
         return finalMessage
       },
+      onSuccess: (_, { workspaceId, chatId }) => {
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.detail(workspaceId, chatId),
+        })
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.list(workspaceId),
+        })
+      },
       ...options,
     })
   }
@@ -403,7 +428,7 @@ export namespace ChatQueries {
     const getChatFromCache = (): Chat | null => {
       // First try individual cache
       const individualChat = queryClient.getQueryData<Chat>(
-        queryKeys.detail(chatId),
+        queryKeys.detail(workspaceId, chatId),
       )
       if (individualChat) return individualChat
 
@@ -416,7 +441,7 @@ export namespace ChatQueries {
 
     return {
       chat: getChatFromCache(),
-      query: useChat(chatId, { enabled: !getChatFromCache() }),
+      query: useChat(workspaceId, chatId, { enabled: !getChatFromCache() }),
     }
   }
 
@@ -424,9 +449,9 @@ export namespace ChatQueries {
   export const useAddMessage = () => {
     const queryClient = useQueryClient()
 
-    return (chatId: ChatId, message: Message) => {
+    return (workspaceId: WorkspaceId, chatId: ChatId, message: Message) => {
       queryClient.setQueryData<Array<Message>>(
-        queryKeys.messagesList(chatId),
+        queryKeys.messagesList(workspaceId, chatId),
         (oldMessages = []) => [...oldMessages, message],
       )
     }
@@ -435,9 +460,14 @@ export namespace ChatQueries {
   export const useUpdateMessage = () => {
     const queryClient = useQueryClient()
 
-    return (chatId: ChatId, messageId: MessageId, content: string) => {
+    return (
+      workspaceId: WorkspaceId,
+      chatId: ChatId,
+      messageId: MessageId,
+      content: string,
+    ) => {
       queryClient.setQueryData<Array<Message>>(
-        queryKeys.messagesList(chatId),
+        queryKeys.messagesList(workspaceId, chatId),
         (oldMessages = []) =>
           oldMessages.map((msg) =>
             msg.id === messageId ? new Message({ ...msg, content }) : msg,
@@ -450,10 +480,10 @@ export namespace ChatQueries {
   export const usePrefetchChat = () => {
     const queryClient = useQueryClient()
 
-    return (chatId: ChatId) => {
+    return (workspaceId: WorkspaceId, chatId: ChatId) => {
       queryClient.prefetchQuery({
-        queryKey: queryKeys.detail(chatId),
-        queryFn: () => chatApi.getChat(chatId),
+        queryKey: queryKeys.detail(workspaceId, chatId),
+        queryFn: () => chatApi.getChat(workspaceId, chatId),
         staleTime: 5 * 60 * 1000,
       })
     }
@@ -462,10 +492,10 @@ export namespace ChatQueries {
   export const usePrefetchMessages = () => {
     const queryClient = useQueryClient()
 
-    return (chatId: ChatId) => {
+    return (workspaceId: WorkspaceId, chatId: ChatId) => {
       queryClient.prefetchQuery({
-        queryKey: queryKeys.messagesList(chatId),
-        queryFn: () => chatApi.getMessages(chatId),
+        queryKey: queryKeys.messagesList(workspaceId, chatId),
+        queryFn: () => chatApi.getMessages(workspaceId, chatId),
         staleTime: 1 * 60 * 1000,
       })
     }
@@ -482,11 +512,13 @@ export namespace ChatQueries {
         queryClient.invalidateQueries({
           queryKey: queryKeys.list(workspaceId),
         }),
-      invalidateChat: (chatId: ChatId) =>
-        queryClient.invalidateQueries({ queryKey: queryKeys.detail(chatId) }),
-      invalidateMessages: (chatId: ChatId) =>
+      invalidateChat: (workspaceId: WorkspaceId, chatId: ChatId) =>
         queryClient.invalidateQueries({
-          queryKey: queryKeys.messagesList(chatId),
+          queryKey: queryKeys.detail(workspaceId, chatId),
+        }),
+      invalidateMessages: (workspaceId: WorkspaceId, chatId: ChatId) =>
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.messagesList(workspaceId, chatId),
         }),
     }
   }

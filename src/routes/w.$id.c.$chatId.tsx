@@ -18,13 +18,14 @@ function ChatPage() {
   const [isStreaming, setIsStreaming] = useState(false)
 
   const chatIdTyped = ChatId.make(chatId)
+  const workspaceIdTyped = WorkspaceId.make(id)
 
   // Get chat and messages data
-  const chatQuery = ChatQueries.useChat(chatIdTyped)
+  const chatQuery = ChatQueries.useChat(workspaceIdTyped, chatIdTyped)
   const chat = chatQuery.data
 
   const { data: messages = [], isLoading: messagesLoading } =
-    ChatQueries.useMessages(chatIdTyped)
+    ChatQueries.useMessages(workspaceIdTyped, chatIdTyped)
 
   // Send message mutation with streaming support
   const streamMessage = ChatQueries.useStreamMessage({
@@ -48,6 +49,7 @@ function ChatPage() {
     if (!content.trim()) return
 
     await streamMessage.mutateAsync({
+      workspaceId: workspaceIdTyped,
       chatId: chatIdTyped,
       content: content.trim(),
       onChunk: (chunk) => {
