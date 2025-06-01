@@ -1,17 +1,7 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import React from 'react'
-import { constVoid, constant } from 'effect/Function'
-import * as Effect from 'effect/Effect'
-import * as HttpClient from '@effect/platform/HttpClient'
-import * as Stream from 'effect/Stream'
-import * as Schema from 'effect/Schema'
-import * as Either from 'effect/Either'
-import * as Option from 'effect/Option'
-import * as Schedule from 'effect/Schedule'
-import * as Fiber from 'effect/Fiber'
 import { getMessagesByChatId } from '@/lib/mock-data'
 import { Message, MessageId, MessageRole } from '@/types/message'
-import { runtime } from '@/lib/runtime'
 
 export interface UseChatOptions {
   /** Chat ID to identify the conversation */

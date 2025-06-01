@@ -15,3 +15,12 @@ export class Message extends Schema.TaggedClass<Message>('Message')('Message', {
   role: Schema.Enums(MessageRole),
   createdAt: SchemaUtils.Timestamp,
 }) {}
+
+export class CreateMessagePayload extends Schema.TaggedClass<CreateMessagePayload>(
+  'CreateMessagePayload',
+)('CreateMessagePayload', {
+  id: Message.fields.id.pipe(Schema.optional),
+  content: Message.fields.content,
+  role: Message.fields.role,
+  createdAt: Message.fields.createdAt.pipe(Schema.optional),
+}) {}

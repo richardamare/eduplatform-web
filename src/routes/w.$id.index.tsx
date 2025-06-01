@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { WorkspaceQueries } from '@/data-access/workspace'
-import { ChatQueries } from '@/data-access/chat'
 import { WorkspaceId } from '@/types/workspace'
+import { WorkspaceQueries } from '@/data-access/workspace-queries'
+import { ChatQueries } from '@/data-access/chat-queries'
 
 export const Route = createFileRoute('/w/$id/')({
   component: WorkspaceOverview,
@@ -10,14 +10,10 @@ export const Route = createFileRoute('/w/$id/')({
 function WorkspaceOverview() {
   const { id } = Route.useParams()
 
-  const workspaceQuery = WorkspaceQueries.useWorkspaceDetail(
-    WorkspaceId.make(id),
-  )
+  const workspaceQuery = WorkspaceQueries.useWorkspace(WorkspaceId.make(id))
   const workspace = workspaceQuery.data
 
-  const chatsQuery = ChatQueries.useChats(WorkspaceId.make(id), {
-    enabled: !!workspace?.id,
-  })
+  const chatsQuery = ChatQueries.useChats(WorkspaceId.make(id))
   const chats = chatsQuery.data ?? []
 
   if (!workspace) {

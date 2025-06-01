@@ -1,12 +1,11 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useEffect, useRef } from 'react'
-import { useChat } from '@/data-access/use-chat'
+import { useEffect, useRef, useState } from 'react'
 import { MessageRole } from '@/types/message'
 import { ChatInput } from '@/components/chat-input'
 import { MessageList } from '@/components/message-list'
-import { ChatQueries } from '@/data-access/chat'
 import { WorkspaceId } from '@/types/workspace'
 import { ChatId } from '@/types/chat'
+import { ChatQueries } from '@/data-access/chat-queries'
 
 export const Route = createFileRoute('/w/$id/c/$chatId')({
   component: ChatPage,
@@ -15,16 +14,26 @@ export const Route = createFileRoute('/w/$id/c/$chatId')({
 function ChatPage() {
   const { id, chatId } = Route.useParams()
   const scrollRef = useRef<HTMLDivElement>(null)
+  const [input, setInput] = useState('')
+  const [isStreaming, setIsStreaming] = useState(false)
 
-  const chatQuery = ChatQueries.useChatDetail(
-    WorkspaceId.make(id),
-    ChatId.make(chatId),
-  )
+  const chatIdTyped = ChatId.make(chatId)
+
+  // Get chat and messages data
+  const chatQuery = ChatQueries.useChat(chatIdTyped)
   const chat = chatQuery.data
 
-  const { messages, append, isLoading, status } = useChat({
-    id: chat?.id,
+  const { data: messages = [], isLoading: messagesLoading } =
+    ChatQueries.useMessages(chatIdTyped)
+
+  // Send message mutation with streaming support
+  const streamMessage = ChatQueries.useStreamMessage({
+    onMutate: () => setIsStreaming(true),
+    onSettled: () => setIsStreaming(false),
+    onSuccess: () => setInput(''),
   })
+
+  const isLoading = messagesLoading || streamMessage.isPending
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -36,13 +45,18 @@ function ChatPage() {
   }, [messages])
 
   const handleSend = async (content: string) => {
-    await append({
-      content,
-      role: MessageRole.USER,
+    if (!content.trim()) return
+
+    await streamMessage.mutateAsync({
+      chatId: chatIdTyped,
+      content: content.trim(),
+      onChunk: (chunk) => {
+        // Real-time content updates handled by the mutation
+      },
     })
   }
 
-  const isWaitingForResponse = status === 'streaming' || status === 'submitted'
+  const isWaitingForResponse = isStreaming || streamMessage.isPending
 
   if (!chat) {
     return (
@@ -63,7 +77,7 @@ function ChatPage() {
       <div className="absolute right-8 bottom-8 left-8 w-auto">
         <ChatInput
           onSend={handleSend}
-          disabled={isLoading}
+          disabled={isLoading || isWaitingForResponse}
           className="max-w-4xl mx-auto"
           placeholder={
             isWaitingForResponse

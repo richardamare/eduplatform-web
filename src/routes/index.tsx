@@ -4,10 +4,9 @@ import { Folder, Plus } from 'lucide-react'
 import type { Workspace } from '@/types/workspace'
 
 import { Card, CardContent } from '@/components/ui/card'
-import { mockWorkspaces } from '@/lib/mock-data'
 import { useModal } from '@/hooks/use-modal'
 import { MODAL_TYPE } from '@/types/modal'
-import { WorkspaceQueries } from '@/data-access/workspace'
+import { WorkspaceQueries } from '@/data-access/workspace-queries'
 
 export const Route = createFileRoute('/')({
   component: App,
