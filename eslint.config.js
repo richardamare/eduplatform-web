@@ -8,6 +8,7 @@ export default [
     rules: {
       'import/consistent-type-specifier-style': 'off',
       '@typescript-eslint/no-namespace': 'off',
+      '@typescript-eslint/no-unnecessary-condition': 'off',
     },
   },
 ]

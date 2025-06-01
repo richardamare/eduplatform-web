@@ -2,6 +2,7 @@ import * as Schema from 'effect/Schema'
 import * as SchemaUtils from '@/types/utils'
 
 export const MessageId = Schema.String.pipe(Schema.brand('MessageId'))
+export type MessageId = Schema.Schema.Type<typeof MessageId>
 
 export enum MessageRole {
   USER = 'user',
