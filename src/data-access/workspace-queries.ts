@@ -210,6 +210,10 @@ export namespace WorkspaceQueries {
         queryClient.invalidateQueries({
           queryKey: queryKeys.lists(),
         })
+
+        queryClient.invalidateQueries({
+          queryKey: queryKeys.all,
+        })
       },
       ...options,
     })
