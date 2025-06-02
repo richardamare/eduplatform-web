@@ -1,15 +1,15 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
 import { UploadIcon } from 'lucide-react';
-import type { ReactNode } from 'react';
 import { createContext, useContext } from 'react';
 import { useDropzone } from 'react-dropzone';
+import type { ReactNode } from 'react';
 import type { DropEvent, DropzoneOptions, FileRejection } from 'react-dropzone';
+import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
 
 type DropzoneContextType = {
-  src?: File[];
+  src?: Array<File>;
   accept?: DropzoneOptions['accept'];
   maxSize?: DropzoneOptions['maxSize'];
   minSize?: DropzoneOptions['minSize'];
@@ -34,11 +34,11 @@ const DropzoneContext = createContext<DropzoneContextType | undefined>(
 );
 
 export type DropzoneProps = Omit<DropzoneOptions, 'onDrop'> & {
-  src?: File[];
+  src?: Array<File>;
   className?: string;
   onDrop?: (
-    acceptedFiles: File[],
-    fileRejections: FileRejection[],
+    acceptedFiles: Array<File>,
+    fileRejections: Array<FileRejection>,
     event: DropEvent
   ) => void;
   children?: ReactNode;

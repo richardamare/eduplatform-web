@@ -5,12 +5,12 @@ import {
   transformerNotationHighlight,
   transformerNotationWordHighlight,
 } from '@shikijs/transformers';
-import type { HTMLAttributes } from 'react';
 import {
   type BundledLanguage,
   type CodeOptionsMultipleThemes,
   codeToHtml,
 } from 'shiki';
+import type { HTMLAttributes } from 'react';
 
 export type CodeBlockContentProps = HTMLAttributes<HTMLDivElement> & {
   themes?: CodeOptionsMultipleThemes['themes'];

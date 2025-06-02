@@ -1,6 +1,5 @@
 'use client';
 
-import { cn } from '@/lib/utils';
 import {
   type BundledLanguage,
   CodeBlock,
@@ -19,9 +18,10 @@ import {
   CodeBlockSelectValue,
 } from '@repo/code-block';
 import { memo } from 'react';
-import type { HTMLAttributes } from 'react';
 import ReactMarkdown, { type Options } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import type { HTMLAttributes } from 'react';
+import { cn } from '@/lib/utils';
 
 export type AIResponseProps = HTMLAttributes<HTMLDivElement> & {
   options?: Options;

@@ -1,14 +1,5 @@
 'use client';
 
-import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { cn } from '@/lib/utils';
 import {
   type IconType,
   SiAstro,
@@ -89,12 +80,6 @@ import {
   transformerNotationWordHighlight,
 } from '@shikijs/transformers';
 import { CheckIcon, CopyIcon } from 'lucide-react';
-import type {
-  ComponentProps,
-  HTMLAttributes,
-  ReactElement,
-  ReactNode,
-} from 'react';
 import {
   cloneElement,
   createContext,
@@ -107,6 +92,22 @@ import {
   type CodeOptionsMultipleThemes,
   codeToHtml,
 } from 'shiki';
+import type {
+  ComponentProps,
+  HTMLAttributes,
+  ReactElement,
+  ReactNode,
+} from 'react';
+import { cn } from '@/lib/utils';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+
 export type { BundledLanguage } from 'shiki';
 
 const filenameIconMap = {
@@ -299,7 +300,7 @@ type CodeBlockData = {
 type CodeBlockContextType = {
   value: string | undefined;
   onValueChange: ((value: string) => void) | undefined;
-  data: CodeBlockData[];
+  data: Array<CodeBlockData>;
 };
 
 const CodeBlockContext = createContext<CodeBlockContextType>({
@@ -312,7 +313,7 @@ export type CodeBlockProps = HTMLAttributes<HTMLDivElement> & {
   defaultValue?: string;
   value?: string;
   onValueChange?: (value: string) => void;
-  data: CodeBlockData[];
+  data: Array<CodeBlockData>;
 };
 
 export const CodeBlock = ({

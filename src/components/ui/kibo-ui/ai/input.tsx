@@ -1,5 +1,11 @@
 'use client';
 
+import { Children, useCallback, useEffect, useRef } from 'react';
+import type {
+  ComponentProps,
+  HTMLAttributes,
+  KeyboardEventHandler,
+} from 'react';
 import { Button } from '@/components/ui/button';
 import {
   Select,
@@ -10,12 +16,6 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { cn } from '@/lib/utils';
-import { Children, useCallback, useEffect, useRef } from 'react';
-import type {
-  ComponentProps,
-  HTMLAttributes,
-  KeyboardEventHandler,
-} from 'react';
 
 type UseAutoResizeTextareaProps = {
   minHeight: number;
