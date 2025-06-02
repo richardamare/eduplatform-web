@@ -10,6 +10,7 @@ export default [
       '@typescript-eslint/no-namespace': 'off',
       '@typescript-eslint/no-unnecessary-condition': 'off',
       'sort-imports': 'off',
+      'import/order': 'off',
     },
   },
 ]

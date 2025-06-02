@@ -4,7 +4,7 @@ import { Folder, Plus } from 'lucide-react'
 import type { Workspace } from '@/types/workspace'
 import { Card, CardContent } from '@/components/ui/card'
 import { useModal, MODAL_TYPE } from '@/hooks/use-modal'
-import { mockWorkspaces } from '@/lib/mock-data'
+import { WorkspaceQueries } from '@/data-access/workspace'
 
 export const Route = createFileRoute('/')({
   component: App,
@@ -14,7 +14,8 @@ function App() {
   const navigate = useNavigate()
   const openModal = useModal((s) => s.open)
 
-  const workspaces = mockWorkspaces
+  const workspacesQuery = WorkspaceQueries.useWorkspaces()
+  const workspaces = workspacesQuery.data ?? []
 
   const handleWorkspaceClick = (workspace: Workspace) => {
     navigate({ to: `/w/${workspace.id}` })

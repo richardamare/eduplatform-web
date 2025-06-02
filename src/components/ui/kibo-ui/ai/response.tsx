@@ -1,5 +1,7 @@
-'use client';
-
+import { memo } from 'react'
+import ReactMarkdown, { type Options } from 'react-markdown'
+import remarkGfm from 'remark-gfm'
+import type { HTMLAttributes } from 'react'
 import {
   type BundledLanguage,
   CodeBlock,
@@ -16,17 +18,13 @@ import {
   CodeBlockSelectItem,
   CodeBlockSelectTrigger,
   CodeBlockSelectValue,
-} from '@repo/code-block';
-import { memo } from 'react';
-import ReactMarkdown, { type Options } from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import type { HTMLAttributes } from 'react';
-import { cn } from '@/lib/utils';
+} from '@/components/ui/kibo-ui/code-block'
+import { cn } from '@/lib/utils'
 
 export type AIResponseProps = HTMLAttributes<HTMLDivElement> & {
-  options?: Options;
-  children: Options['children'];
-};
+  options?: Options
+  children: Options['children']
+}
 
 const components: Options['components'] = {
   pre: ({ children }) => <div>{children}</div>,
@@ -100,10 +98,10 @@ const components: Options['components'] = {
     </h6>
   ),
   code: ({ node, className, children }) => {
-    let language = 'javascript';
+    let language = 'javascript'
 
     if (typeof node?.properties?.className === 'string') {
-      language = node.properties.className.replace('language-', '');
+      language = node.properties.className.replace('language-', '')
     }
 
     const data: CodeBlockProps['data'] = [
@@ -112,7 +110,7 @@ const components: Options['components'] = {
         filename: 'index.js',
         code: children as string,
       },
-    ];
+    ]
 
     return (
       <CodeBlock
@@ -155,16 +153,16 @@ const components: Options['components'] = {
           )}
         </CodeBlockBody>
       </CodeBlock>
-    );
+    )
   },
-};
+}
 
 export const AIResponse = memo(
   ({ className, options, children, ...props }: AIResponseProps) => (
     <div
       className={cn(
         'size-full [&>*:first-child]:mt-0 [&>*:last-child]:mb-0',
-        className
+        className,
       )}
       {...props}
     >
@@ -177,5 +175,5 @@ export const AIResponse = memo(
       </ReactMarkdown>
     </div>
   ),
-  (prevProps, nextProps) => prevProps.children === nextProps.children
-);
+  (prevProps, nextProps) => prevProps.children === nextProps.children,
+)
