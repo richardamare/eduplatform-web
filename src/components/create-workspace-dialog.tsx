@@ -1,7 +1,6 @@
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { effectTsResolver } from '@hookform/resolvers/effect-ts'
-import * as z from 'zod'
 import { Schema } from 'effect'
 import { useModal } from '@/hooks/use-modal'
 import {

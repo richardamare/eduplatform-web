@@ -1,121 +1,220 @@
 import {
   useMutation,
+  type UseMutationOptions,
   useQuery,
   useQueryClient,
   type UseQueryOptions,
-  type UseMutationOptions,
 } from '@tanstack/react-query'
 import {
   type CreateWorkspacePayload,
   Workspace,
   type WorkspaceId,
 } from '@/types/workspace'
-
-const API_BASE_URL = 'http://localhost:5131/api'
-
-// API Response types
-interface WorkspaceResponse {
-  id: string
-  name: string
-  createdAt: string
-  updatedAt: string
-}
-
-interface CreateWorkspaceRequest {
-  name: string
-}
-
-interface UpdateWorkspaceRequest {
-  name: string
-}
+import { Effect, Schema } from 'effect'
+import { httpClient } from '@/data-access/api.ts'
+import {
+  HttpBody,
+  HttpClient,
+  HttpClientRequest,
+  HttpClientResponse,
+} from '@effect/platform'
+import { useRuntime } from '@/hooks/use-runtime.ts'
 
 // API functions
 const workspaceApi = {
-  async getWorkspaces(): Promise<Array<Workspace>> {
-    const response = await fetch(`${API_BASE_URL}/workspaces`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch workspaces: ${response.statusText}`)
-    }
+  getWorkspaces() {
+    // const response = await fetch(`${API_BASE_URL}/workspaces`)
+    // if (!response.ok) {
+    //   throw new Error(`Failed to fetch workspaces: ${response.statusText}`)
+    // }
+    //
+    // const workspaces: Array<WorkspaceResponse> = await response.json()
+    // return workspaces.map(
+    //   (workspace) =>
+    //     new Workspace({
+    //       id: workspace.id as WorkspaceId,
+    //       name: workspace.name,
+    //       createdAt: new Date(workspace.createdAt),
+    //       updatedAt: new Date(workspace.updatedAt),
+    //     }),
+    // )
 
-    const workspaces: Array<WorkspaceResponse> = await response.json()
-    return workspaces.map(
-      (workspace) =>
-        new Workspace({
-          id: workspace.id as WorkspaceId,
-          name: workspace.name,
-          createdAt: new Date(workspace.createdAt),
-          updatedAt: new Date(workspace.updatedAt),
-        }),
-    )
-  },
+    return Effect.gen(function* () {
+      const client = yield* httpClient
 
-  async createWorkspace(payload: CreateWorkspacePayload): Promise<Workspace> {
-    const response = await fetch(`${API_BASE_URL}/workspaces`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name: payload.name }),
-    })
-
-    if (!response.ok) {
-      throw new Error(`Failed to create workspace: ${response.statusText}`)
-    }
-
-    const workspace: WorkspaceResponse = await response.json()
-    return new Workspace({
-      id: workspace.id as WorkspaceId,
-      name: workspace.name,
-      createdAt: new Date(workspace.createdAt),
-      updatedAt: new Date(workspace.updatedAt),
-    })
-  },
-
-  async getWorkspace(id: WorkspaceId): Promise<Workspace> {
-    const response = await fetch(`${API_BASE_URL}/workspaces/${id}`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch workspace: ${response.statusText}`)
-    }
-
-    const workspace: WorkspaceResponse = await response.json()
-    return new Workspace({
-      id: workspace.id as WorkspaceId,
-      name: workspace.name,
-      createdAt: new Date(workspace.createdAt),
-      updatedAt: new Date(workspace.updatedAt),
+      return yield* client.get('/workspaces').pipe(
+        Effect.flatMap(
+          HttpClientResponse.schemaBodyJson(
+            Schema.Array(Workspace.pipe(Schema.omit('_tag'))),
+            {
+              errors: 'all',
+            },
+          ),
+        ),
+        Effect.map((workspaces) =>
+          workspaces.map(
+            (workspace) =>
+              new Workspace({
+                id: workspace.id as WorkspaceId,
+                name: workspace.name,
+                createdAt: new Date(workspace.createdAt),
+                updatedAt: new Date(workspace.updatedAt),
+              }),
+          ),
+        ),
+        Effect.tapError(Effect.logError),
+      )
     })
   },
 
-  async updateWorkspace(id: WorkspaceId, name: string): Promise<Workspace> {
-    const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ name }),
-    })
+  createWorkspace(payload: CreateWorkspacePayload) {
+    // const response = await fetch(`${API_BASE_URL}/workspaces`, {
+    //   method: 'POST',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({ name: payload.name }),
+    // })
+    //
+    // if (!response.ok) {
+    //   throw new Error(`Failed to create workspace: ${response.statusText}`)
+    // }
+    //
+    // const workspace: WorkspaceResponse = await response.json()
+    // return new Workspace({
+    //   id: workspace.id as WorkspaceId,
+    //   name: workspace.name,
+    //   createdAt: new Date(workspace.createdAt),
+    //   updatedAt: new Date(workspace.updatedAt),
+    // })
 
-    if (!response.ok) {
-      throw new Error(`Failed to update workspace: ${response.statusText}`)
-    }
+    return Effect.gen(function* () {
+      const client = yield* httpClient
 
-    const workspace: WorkspaceResponse = await response.json()
-    return new Workspace({
-      id: workspace.id as WorkspaceId,
-      name: workspace.name,
-      createdAt: new Date(workspace.createdAt),
-      updatedAt: new Date(workspace.updatedAt),
+      const request = HttpClientRequest.post('/workspaces').pipe(
+        HttpClientRequest.setBody(yield* HttpBody.json(payload)),
+      )
+
+      return yield* client.execute(request).pipe(
+        Effect.flatMap(
+          HttpClientResponse.schemaBodyJson(
+            Workspace.pipe(Schema.omit('_tag')),
+          ),
+        ),
+        Effect.map(
+          (workspace) =>
+            new Workspace({
+              id: workspace.id as WorkspaceId,
+              name: workspace.name,
+              createdAt: new Date(workspace.createdAt),
+              updatedAt: new Date(workspace.updatedAt),
+            }),
+        ),
+        Effect.tapError(Effect.logError),
+      )
     })
   },
 
-  async deleteWorkspace(id: WorkspaceId): Promise<void> {
-    const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
-      method: 'DELETE',
-    })
+  getWorkspace(id: WorkspaceId) {
+    // const response = await fetch(`${API_BASE_URL}/workspaces/${id}`)
+    // if (!response.ok) {
+    //   throw new Error(`Failed to fetch workspace: ${response.statusText}`)
+    // }
+    //
+    // const workspace: WorkspaceResponse = await response.json()
+    // return new Workspace({
+    //   id: workspace.id as WorkspaceId,
+    //   name: workspace.name,
+    //   createdAt: new Date(workspace.createdAt),
+    //   updatedAt: new Date(workspace.updatedAt),
+    // })
+    return Effect.gen(function* () {
+      const client = yield* httpClient
 
-    if (!response.ok) {
-      throw new Error(`Failed to delete workspace: ${response.statusText}`)
-    }
+      return yield* client.get(`/workspaces/${id}`).pipe(
+        Effect.flatMap(
+          HttpClientResponse.schemaBodyJson(
+            Workspace.pipe(Schema.omit('_tag')),
+          ),
+        ),
+        Effect.map(
+          (workspace) =>
+            new Workspace({
+              id: workspace.id as WorkspaceId,
+              name: workspace.name,
+              createdAt: new Date(workspace.createdAt),
+              updatedAt: new Date(workspace.updatedAt),
+            }),
+        ),
+        Effect.tapError(Effect.logError),
+      )
+    })
+  },
+
+  updateWorkspace(id: WorkspaceId, name: string) {
+    // const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
+    //   method: 'PUT',
+    //   headers: {
+    //     'Content-Type': 'application/json',
+    //   },
+    //   body: JSON.stringify({ name }),
+    // })
+    //
+    // if (!response.ok) {
+    //   throw new Error(`Failed to update workspace: ${response.statusText}`)
+    // }
+    //
+    // const workspace: WorkspaceResponse = await response.json()
+    // return new Workspace({
+    //   id: workspace.id as WorkspaceId,
+    //   name: workspace.name,
+    //   createdAt: new Date(workspace.createdAt),
+    //   updatedAt: new Date(workspace.updatedAt),
+    // })
+    return Effect.gen(function* () {
+      const client = yield* httpClient
+
+      const request = HttpClientRequest.put(`/workspaces/${id}`).pipe(
+        HttpClientRequest.setBody(yield* HttpBody.json({ name })),
+      )
+
+      return yield* client.execute(request).pipe(
+        Effect.flatMap(
+          HttpClientResponse.schemaBodyJson(
+            Workspace.pipe(Schema.omit('_tag')),
+          ),
+        ),
+        Effect.map(
+          (workspace) =>
+            new Workspace({
+              id: workspace.id as WorkspaceId,
+              name: workspace.name,
+              createdAt: new Date(workspace.createdAt),
+              updatedAt: new Date(workspace.updatedAt),
+            }),
+        ),
+        Effect.tapError(Effect.logError),
+      )
+    })
+  },
+
+  deleteWorkspace(id: WorkspaceId) {
+    // const response = await fetch(`${API_BASE_URL}/workspaces/${id}`, {
+    //   method: 'DELETE',
+    // })
+    //
+    // if (!response.ok) {
+    //   throw new Error(`Failed to delete workspace: ${response.statusText}`)
+    // }
+    return Effect.gen(function* () {
+      const client = (yield* httpClient).pipe(
+        HttpClient.filterStatus((status) => status === 204),
+      )
+
+      const request = HttpClientRequest.del(`/workspaces/${id}`).pipe()
+
+      yield* client.execute(request)
+    })
   },
 }
 
@@ -131,7 +230,7 @@ export namespace WorkspaceQueries {
 
   // Types
   export type WorkspacesQueryOptions = Omit<
-    UseQueryOptions<Array<Workspace>, Error, Array<Workspace>>,
+    UseQueryOptions<readonly Workspace[], Error, readonly Workspace[]>,
     'queryKey' | 'queryFn'
   >
 
@@ -157,9 +256,11 @@ export namespace WorkspaceQueries {
 
   // Hooks
   export const useWorkspaces = (options?: WorkspacesQueryOptions) => {
+    const runtime = useRuntime()
+
     return useQuery({
       queryKey: queryKeys.lists(),
-      queryFn: workspaceApi.getWorkspaces,
+      queryFn: () => workspaceApi.getWorkspaces().pipe(runtime.runPromise),
       staleTime: 5 * 60 * 1000, // 5 minutes
       ...options,
     })
@@ -169,11 +270,12 @@ export namespace WorkspaceQueries {
     id: WorkspaceId,
     options?: WorkspaceQueryOptions,
   ) => {
+    const runtime = useRuntime()
     const queryClient = useQueryClient()
 
     return useQuery({
       queryKey: queryKeys.detail(id),
-      queryFn: () => workspaceApi.getWorkspace(id),
+      queryFn: () => workspaceApi.getWorkspace(id).pipe(runtime.runPromise),
       staleTime: 5 * 60 * 1000,
       initialData: () => {
         // Try to get from cache first
@@ -189,10 +291,12 @@ export namespace WorkspaceQueries {
   export const useCreateWorkspace = (
     options?: CreateWorkspaceMutationOptions,
   ) => {
+    const runtime = useRuntime()
     const queryClient = useQueryClient()
 
     return useMutation({
-      mutationFn: workspaceApi.createWorkspace,
+      mutationFn: (payload: CreateWorkspacePayload) =>
+        workspaceApi.createWorkspace(payload).pipe(runtime.runPromise),
       onSuccess: (newWorkspace) => {
         // Update the workspaces list cache
         queryClient.setQueryData<Array<Workspace>>(
@@ -222,11 +326,12 @@ export namespace WorkspaceQueries {
   export const useUpdateWorkspace = (
     options?: UpdateWorkspaceMutationOptions,
   ) => {
+    const runtime = useRuntime()
     const queryClient = useQueryClient()
 
     return useMutation({
       mutationFn: ({ id, name }: { id: WorkspaceId; name: string }) =>
-        workspaceApi.updateWorkspace(id, name),
+        workspaceApi.updateWorkspace(id, name).pipe(runtime.runPromise),
       onSuccess: (updatedWorkspace) => {
         // Update the workspaces list cache
         queryClient.setQueryData<Array<Workspace>>(
@@ -257,10 +362,12 @@ export namespace WorkspaceQueries {
   export const useDeleteWorkspace = (
     options?: DeleteWorkspaceMutationOptions,
   ) => {
+    const runtime = useRuntime()
     const queryClient = useQueryClient()
 
     return useMutation({
-      mutationFn: (id: WorkspaceId) => workspaceApi.deleteWorkspace(id),
+      mutationFn: (id: WorkspaceId) =>
+        workspaceApi.deleteWorkspace(id).pipe(runtime.runPromise),
       onSuccess: (_, deletedId) => {
         // Remove from workspaces list cache
         queryClient.setQueryData<Array<Workspace>>(

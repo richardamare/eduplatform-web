@@ -1,5 +1,5 @@
 import { create } from 'zustand'
-import { MODAL_TYPE, type OpenModalPayload } from '@/types/modal'
+import { type OpenModalPayload } from '@/types/modal'
 
 type ModalState = {
   isOpen: boolean
