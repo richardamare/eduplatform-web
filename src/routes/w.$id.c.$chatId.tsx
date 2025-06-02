@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useRef, useState } from 'react'
-import { MessageRole } from '@/types/message'
 import { ChatInput } from '@/components/chat-input'
 import { MessageList } from '@/components/message-list'
 import { WorkspaceId } from '@/types/workspace'
@@ -14,7 +13,7 @@ export const Route = createFileRoute('/w/$id/c/$chatId')({
 function ChatPage() {
   const { id, chatId } = Route.useParams()
   const scrollRef = useRef<HTMLDivElement>(null)
-  const [input, setInput] = useState('')
+  // const [input, setInput] = useState('')
   const [isStreaming, setIsStreaming] = useState(false)
 
   const chatIdTyped = ChatId.make(chatId)
@@ -31,7 +30,9 @@ function ChatPage() {
   const streamMessage = ChatQueries.useStreamMessage({
     onMutate: () => setIsStreaming(true),
     onSettled: () => setIsStreaming(false),
-    onSuccess: () => setInput(''),
+    onSuccess: () => {
+      document.getElementById('message-input')?.focus()
+    },
   })
 
   const isLoading = messagesLoading || streamMessage.isPending

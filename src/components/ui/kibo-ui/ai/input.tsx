@@ -121,6 +121,7 @@ export const AIInputTextarea = ({
         'w-full resize-none rounded-none border-none p-3 shadow-none outline-none ring-0',
         'bg-transparent dark:bg-transparent',
         'focus-visible:ring-0',
+        'max-h-[164px] min-h-[48px]',
         className,
       )}
       onChange={(e) => {
