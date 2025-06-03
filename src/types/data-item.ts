@@ -32,3 +32,19 @@ export const FlashcardDto = Schema.Struct({
   topic: Schema.String,
 })
 export type FlashcardDto = typeof FlashcardDto.Type
+
+export const ExamDto = Schema.Struct({
+  testQuestions: Schema.Array(
+    Schema.Struct({
+      question: Schema.String,
+      answerA: Schema.String,
+      answerB: Schema.String,
+      answerC: Schema.String,
+      answerD: Schema.String,
+      correct_answer: Schema.String,
+    }),
+  ),
+  totalCount: Schema.Number,
+  topic: Schema.String,
+})
+export type ExamDto = typeof ExamDto.Type

@@ -1,5 +1,6 @@
 import { MODAL_TYPE, useModal } from '@/hooks/use-modal'
 import { GenerateFlashcardsDialog } from '@/components/generate-flashcards-dialog'
+import { GenerateExamsDialog } from '@/components/generate-exams-dialog'
 
 export const ModalProvider = () => {
   const modals = useModal((state) => state.modals)
@@ -15,6 +16,14 @@ export const ModalProvider = () => {
           case MODAL_TYPE.GENERATE_FLASHCARDS:
             return (
               <GenerateFlashcardsDialog
+                key={id}
+                id={id}
+                workspaceId={props.workspaceId}
+              />
+            )
+          case MODAL_TYPE.GENERATE_EXAMS:
+            return (
+              <GenerateExamsDialog
                 key={id}
                 id={id}
                 workspaceId={props.workspaceId}

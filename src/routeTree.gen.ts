@@ -15,6 +15,7 @@ import { Route as IndexImport } from './routes/index'
 import { Route as WIdImport } from './routes/w.$id'
 import { Route as WIdIndexImport } from './routes/w.$id.index'
 import { Route as WIdFlashcardsSetIndexImport } from './routes/w.$id.flashcards.$setIndex'
+import { Route as WIdExamsExamIndexImport } from './routes/w.$id.exams.$examIndex'
 import { Route as WIdCNewImport } from './routes/w.$id.c.new'
 import { Route as WIdCChatIdImport } from './routes/w.$id.c.$chatId'
 
@@ -41,6 +42,12 @@ const WIdIndexRoute = WIdIndexImport.update({
 const WIdFlashcardsSetIndexRoute = WIdFlashcardsSetIndexImport.update({
   id: '/flashcards/$setIndex',
   path: '/flashcards/$setIndex',
+  getParentRoute: () => WIdRoute,
+} as any)
+
+const WIdExamsExamIndexRoute = WIdExamsExamIndexImport.update({
+  id: '/exams/$examIndex',
+  path: '/exams/$examIndex',
   getParentRoute: () => WIdRoute,
 } as any)
 
@@ -95,6 +102,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WIdCNewImport
       parentRoute: typeof WIdImport
     }
+    '/w/$id/exams/$examIndex': {
+      id: '/w/$id/exams/$examIndex'
+      path: '/exams/$examIndex'
+      fullPath: '/w/$id/exams/$examIndex'
+      preLoaderRoute: typeof WIdExamsExamIndexImport
+      parentRoute: typeof WIdImport
+    }
     '/w/$id/flashcards/$setIndex': {
       id: '/w/$id/flashcards/$setIndex'
       path: '/flashcards/$setIndex'
@@ -111,6 +125,7 @@ interface WIdRouteChildren {
   WIdIndexRoute: typeof WIdIndexRoute
   WIdCChatIdRoute: typeof WIdCChatIdRoute
   WIdCNewRoute: typeof WIdCNewRoute
+  WIdExamsExamIndexRoute: typeof WIdExamsExamIndexRoute
   WIdFlashcardsSetIndexRoute: typeof WIdFlashcardsSetIndexRoute
 }
 
@@ -118,6 +133,7 @@ const WIdRouteChildren: WIdRouteChildren = {
   WIdIndexRoute: WIdIndexRoute,
   WIdCChatIdRoute: WIdCChatIdRoute,
   WIdCNewRoute: WIdCNewRoute,
+  WIdExamsExamIndexRoute: WIdExamsExamIndexRoute,
   WIdFlashcardsSetIndexRoute: WIdFlashcardsSetIndexRoute,
 }
 
@@ -129,6 +145,7 @@ export interface FileRoutesByFullPath {
   '/w/$id/': typeof WIdIndexRoute
   '/w/$id/c/$chatId': typeof WIdCChatIdRoute
   '/w/$id/c/new': typeof WIdCNewRoute
+  '/w/$id/exams/$examIndex': typeof WIdExamsExamIndexRoute
   '/w/$id/flashcards/$setIndex': typeof WIdFlashcardsSetIndexRoute
 }
 
@@ -137,6 +154,7 @@ export interface FileRoutesByTo {
   '/w/$id': typeof WIdIndexRoute
   '/w/$id/c/$chatId': typeof WIdCChatIdRoute
   '/w/$id/c/new': typeof WIdCNewRoute
+  '/w/$id/exams/$examIndex': typeof WIdExamsExamIndexRoute
   '/w/$id/flashcards/$setIndex': typeof WIdFlashcardsSetIndexRoute
 }
 
@@ -147,6 +165,7 @@ export interface FileRoutesById {
   '/w/$id/': typeof WIdIndexRoute
   '/w/$id/c/$chatId': typeof WIdCChatIdRoute
   '/w/$id/c/new': typeof WIdCNewRoute
+  '/w/$id/exams/$examIndex': typeof WIdExamsExamIndexRoute
   '/w/$id/flashcards/$setIndex': typeof WIdFlashcardsSetIndexRoute
 }
 
@@ -158,6 +177,7 @@ export interface FileRouteTypes {
     | '/w/$id/'
     | '/w/$id/c/$chatId'
     | '/w/$id/c/new'
+    | '/w/$id/exams/$examIndex'
     | '/w/$id/flashcards/$setIndex'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,6 +185,7 @@ export interface FileRouteTypes {
     | '/w/$id'
     | '/w/$id/c/$chatId'
     | '/w/$id/c/new'
+    | '/w/$id/exams/$examIndex'
     | '/w/$id/flashcards/$setIndex'
   id:
     | '__root__'
@@ -173,6 +194,7 @@ export interface FileRouteTypes {
     | '/w/$id/'
     | '/w/$id/c/$chatId'
     | '/w/$id/c/new'
+    | '/w/$id/exams/$examIndex'
     | '/w/$id/flashcards/$setIndex'
   fileRoutesById: FileRoutesById
 }
@@ -210,6 +232,7 @@ export const routeTree = rootRoute
         "/w/$id/",
         "/w/$id/c/$chatId",
         "/w/$id/c/new",
+        "/w/$id/exams/$examIndex",
         "/w/$id/flashcards/$setIndex"
       ]
     },
@@ -223,6 +246,10 @@ export const routeTree = rootRoute
     },
     "/w/$id/c/new": {
       "filePath": "w.$id.c.new.tsx",
+      "parent": "/w/$id"
+    },
+    "/w/$id/exams/$examIndex": {
+      "filePath": "w.$id.exams.$examIndex.tsx",
       "parent": "/w/$id"
     },
     "/w/$id/flashcards/$setIndex": {

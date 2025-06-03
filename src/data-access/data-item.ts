@@ -6,7 +6,7 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from '@effect/platform'
-import { DataItem, DataItemDto, FlashcardDto } from '@/types/data-item'
+import { ExamDto, FlashcardDto } from '@/types/data-item'
 import {
   useMutation,
   useQuery,
@@ -45,19 +45,39 @@ export const dataItemApi = {
 
     return yield* http.execute(request).pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(DataItemDto, {
+        HttpClientResponse.schemaBodyJson(FlashcardDto, {
           errors: 'all',
         }),
       ),
-      Effect.map(
-        (item) =>
-          new DataItem({
-            id: item.id,
-            type: item.type,
-            content: item.content,
-            createdAt: new Date(item.created_at),
-            updatedAt: new Date(item.updated_at),
-          }),
+    )
+  }),
+
+  getExams: Effect.fn(function* (workspaceId: WorkspaceId) {
+    const http = yield* httpClient
+
+    const request = HttpClientRequest.get(`/workspaces/${workspaceId}/exams`)
+
+    return yield* http.execute(request).pipe(
+      Effect.flatMap(
+        HttpClientResponse.schemaBodyJson(Schema.Array(ExamDto), {
+          errors: 'all',
+        }),
+      ),
+    )
+  }),
+
+  createExam: Effect.fn(function* (workspaceId: WorkspaceId, topic: string) {
+    const http = yield* httpClient
+
+    const request = HttpClientRequest.post('/exams').pipe(
+      HttpClientRequest.setBody(yield* HttpBody.json({ workspaceId, topic })),
+    )
+
+    return yield* http.execute(request).pipe(
+      Effect.flatMap(
+        HttpClientResponse.schemaBodyJson(ExamDto, {
+          errors: 'all',
+        }),
       ),
     )
   }),
@@ -69,6 +89,11 @@ export namespace DataItemQueries {
     flashcards: (workspaceId: WorkspaceId) => [
       ...queryKeys.all,
       'flashcards',
+      workspaceId,
+    ],
+    exams: (workspaceId: WorkspaceId) => [
+      ...queryKeys.all,
+      'exams',
       workspaceId,
     ],
   }
@@ -102,7 +127,7 @@ export namespace DataItemQueries {
 
   export type CreateFlashcardMutationOptions = Omit<
     UseMutationOptions<
-      DataItem,
+      FlashcardDto,
       Error,
       { workspaceId: WorkspaceId; topic: string }
     >,
@@ -116,6 +141,52 @@ export namespace DataItemQueries {
       mutationFn: (data: { workspaceId: WorkspaceId; topic: string }) =>
         dataItemApi
           .createFlashcard(data.workspaceId, data.topic)
+          .pipe(runtime.runPromise),
+      ...options,
+    })
+  }
+
+  export type ExamsQueryOptions = Omit<
+    UseQueryOptions<Array<ExamDto>, Error, Array<ExamDto>>,
+    'queryKey' | 'queryFn'
+  >
+
+  export const useExams = (
+    workspaceId: WorkspaceId,
+    options?: ExamsQueryOptions,
+  ) => {
+    const runtime = useRuntime()
+
+    return useQuery({
+      queryKey: queryKeys.exams(workspaceId),
+      queryFn: async () => {
+        const res = await dataItemApi
+          .getExams(workspaceId)
+          .pipe(runtime.runPromise)
+
+        return res as Array<ExamDto>
+      },
+      staleTime: 5 * 60 * 1000, // 5 minutes
+      ...options,
+    })
+  }
+
+  export type CreateExamMutationOptions = Omit<
+    UseMutationOptions<
+      ExamDto,
+      Error,
+      { workspaceId: WorkspaceId; topic: string }
+    >,
+    'mutationFn'
+  >
+
+  export const useCreateExam = (options?: CreateExamMutationOptions) => {
+    const runtime = useRuntime()
+
+    return useMutation({
+      mutationFn: (data: { workspaceId: WorkspaceId; topic: string }) =>
+        dataItemApi
+          .createExam(data.workspaceId, data.topic)
           .pipe(runtime.runPromise),
       ...options,
     })
