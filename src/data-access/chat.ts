@@ -160,12 +160,12 @@ const chatApi = {
     const assistantMessageId = `msg_${Date.now()}` as MessageId
 
     try {
-      const response = await fetch(`${SERVER_URL}/chats/${chatId}/messages`, {
+      const response = await fetch(`${SERVER_URL}/chat/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ message: content }),
         ...(signal && { signal }),
       })
 
@@ -188,8 +188,25 @@ const chatApi = {
           if (done) break
 
           const chunk = decoder.decode(value, { stream: true })
-          accumulatedContent += chunk
-          onChunk(accumulatedContent)
+          const lines = chunk.split('\n')
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.slice(6))
+
+                if (data.content) {
+                  accumulatedContent += data.content
+                  onChunk(accumulatedContent)
+                } else if (data.error) {
+                  throw new Error(data.error)
+                }
+                // data.done is handled by the stream ending
+              } catch (e) {
+                // Ignore JSON parse errors for incomplete chunks
+              }
+            }
+          }
         }
       } finally {
         reader.releaseLock()

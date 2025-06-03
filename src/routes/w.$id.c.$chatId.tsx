@@ -61,15 +61,15 @@ function ChatPage() {
 
   const isWaitingForResponse = isStreaming || streamMessage.isPending
 
-  if (!chat) {
-    return (
-      <div className="flex items-center justify-center h-full">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold">Chat not found</h1>
-        </div>
-      </div>
-    )
-  }
+  // if (!chat) {
+  //   return (
+  //     <div className="flex items-center justify-center h-full">
+  //       <div className="text-center">
+  //         <h1 className="text-2xl font-bold">Chat not found</h1>
+  //       </div>
+  //     </div>
+  //   )
+  // }
 
   return (
     <div className="relative flex flex-col h-[calc(100vh-4rem)]">
