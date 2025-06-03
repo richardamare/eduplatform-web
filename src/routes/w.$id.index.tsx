@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, Link } from '@tanstack/react-router'
 import { FileText, Image, FileIcon } from 'lucide-react'
 import { WorkspaceId } from '@/types/workspace'
 import { WorkspaceQueries } from '@/data-access/workspace'
@@ -10,7 +10,6 @@ import {
   DropzoneEmptyState,
 } from '@/components/ui/kibo-ui/dropzone'
 import { AttachmentType, AttachmentStatus } from '@/types/attachment'
-import type { FlashcardDto } from '@/types/data-item'
 
 export const Route = createFileRoute('/w/$id/')({
   component: WorkspaceOverview,
@@ -116,10 +115,21 @@ function WorkspaceOverview() {
               >
                 <div className="space-y-4">
                   <div className="border-b pb-3">
-                    <h4 className="font-semibold text-lg">{set.topic}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {set.totalCount} flashcards
-                    </p>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-lg">{set.topic}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {set.totalCount} flashcards
+                        </p>
+                      </div>
+                      <Link
+                        to="/w/$id/flashcards/$setIndex"
+                        params={{ id, setIndex: setIndex.toString() }}
+                        className="px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg transition-colors"
+                      >
+                        Study
+                      </Link>
+                    </div>
                   </div>
                   <div className="space-y-3">
                     {set.flashcards.map((flashcard, cardIndex) => (

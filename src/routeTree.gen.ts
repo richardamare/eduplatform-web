@@ -14,6 +14,7 @@ import { Route as rootRoute } from './routes/__root'
 import { Route as IndexImport } from './routes/index'
 import { Route as WIdImport } from './routes/w.$id'
 import { Route as WIdIndexImport } from './routes/w.$id.index'
+import { Route as WIdFlashcardsSetIndexImport } from './routes/w.$id.flashcards.$setIndex'
 import { Route as WIdCNewImport } from './routes/w.$id.c.new'
 import { Route as WIdCChatIdImport } from './routes/w.$id.c.$chatId'
 
@@ -34,6 +35,12 @@ const WIdRoute = WIdImport.update({
 const WIdIndexRoute = WIdIndexImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => WIdRoute,
+} as any)
+
+const WIdFlashcardsSetIndexRoute = WIdFlashcardsSetIndexImport.update({
+  id: '/flashcards/$setIndex',
+  path: '/flashcards/$setIndex',
   getParentRoute: () => WIdRoute,
 } as any)
 
@@ -88,6 +95,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WIdCNewImport
       parentRoute: typeof WIdImport
     }
+    '/w/$id/flashcards/$setIndex': {
+      id: '/w/$id/flashcards/$setIndex'
+      path: '/flashcards/$setIndex'
+      fullPath: '/w/$id/flashcards/$setIndex'
+      preLoaderRoute: typeof WIdFlashcardsSetIndexImport
+      parentRoute: typeof WIdImport
+    }
   }
 }
 
@@ -97,12 +111,14 @@ interface WIdRouteChildren {
   WIdIndexRoute: typeof WIdIndexRoute
   WIdCChatIdRoute: typeof WIdCChatIdRoute
   WIdCNewRoute: typeof WIdCNewRoute
+  WIdFlashcardsSetIndexRoute: typeof WIdFlashcardsSetIndexRoute
 }
 
 const WIdRouteChildren: WIdRouteChildren = {
   WIdIndexRoute: WIdIndexRoute,
   WIdCChatIdRoute: WIdCChatIdRoute,
   WIdCNewRoute: WIdCNewRoute,
+  WIdFlashcardsSetIndexRoute: WIdFlashcardsSetIndexRoute,
 }
 
 const WIdRouteWithChildren = WIdRoute._addFileChildren(WIdRouteChildren)
@@ -113,6 +129,7 @@ export interface FileRoutesByFullPath {
   '/w/$id/': typeof WIdIndexRoute
   '/w/$id/c/$chatId': typeof WIdCChatIdRoute
   '/w/$id/c/new': typeof WIdCNewRoute
+  '/w/$id/flashcards/$setIndex': typeof WIdFlashcardsSetIndexRoute
 }
 
 export interface FileRoutesByTo {
@@ -120,6 +137,7 @@ export interface FileRoutesByTo {
   '/w/$id': typeof WIdIndexRoute
   '/w/$id/c/$chatId': typeof WIdCChatIdRoute
   '/w/$id/c/new': typeof WIdCNewRoute
+  '/w/$id/flashcards/$setIndex': typeof WIdFlashcardsSetIndexRoute
 }
 
 export interface FileRoutesById {
@@ -129,13 +147,25 @@ export interface FileRoutesById {
   '/w/$id/': typeof WIdIndexRoute
   '/w/$id/c/$chatId': typeof WIdCChatIdRoute
   '/w/$id/c/new': typeof WIdCNewRoute
+  '/w/$id/flashcards/$setIndex': typeof WIdFlashcardsSetIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/w/$id' | '/w/$id/' | '/w/$id/c/$chatId' | '/w/$id/c/new'
+  fullPaths:
+    | '/'
+    | '/w/$id'
+    | '/w/$id/'
+    | '/w/$id/c/$chatId'
+    | '/w/$id/c/new'
+    | '/w/$id/flashcards/$setIndex'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/w/$id' | '/w/$id/c/$chatId' | '/w/$id/c/new'
+  to:
+    | '/'
+    | '/w/$id'
+    | '/w/$id/c/$chatId'
+    | '/w/$id/c/new'
+    | '/w/$id/flashcards/$setIndex'
   id:
     | '__root__'
     | '/'
@@ -143,6 +173,7 @@ export interface FileRouteTypes {
     | '/w/$id/'
     | '/w/$id/c/$chatId'
     | '/w/$id/c/new'
+    | '/w/$id/flashcards/$setIndex'
   fileRoutesById: FileRoutesById
 }
 
@@ -178,7 +209,8 @@ export const routeTree = rootRoute
       "children": [
         "/w/$id/",
         "/w/$id/c/$chatId",
-        "/w/$id/c/new"
+        "/w/$id/c/new",
+        "/w/$id/flashcards/$setIndex"
       ]
     },
     "/w/$id/": {
@@ -191,6 +223,10 @@ export const routeTree = rootRoute
     },
     "/w/$id/c/new": {
       "filePath": "w.$id.c.new.tsx",
+      "parent": "/w/$id"
+    },
+    "/w/$id/flashcards/$setIndex": {
+      "filePath": "w.$id.flashcards.$setIndex.tsx",
       "parent": "/w/$id"
     }
   }
