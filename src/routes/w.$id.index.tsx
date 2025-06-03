@@ -3,12 +3,14 @@ import { FileText, Image, FileIcon } from 'lucide-react'
 import { WorkspaceId } from '@/types/workspace'
 import { WorkspaceQueries } from '@/data-access/workspace'
 import { AttachmentQueries } from '@/data-access/attachment'
+import { DataItemQueries } from '@/data-access/data-item'
 import {
   Dropzone,
   DropzoneContent,
   DropzoneEmptyState,
 } from '@/components/ui/kibo-ui/dropzone'
 import { AttachmentType, AttachmentStatus } from '@/types/attachment'
+import type { FlashcardDto } from '@/types/data-item'
 
 export const Route = createFileRoute('/w/$id/')({
   component: WorkspaceOverview,
@@ -23,6 +25,9 @@ function WorkspaceOverview() {
 
   const attachmentsQuery = AttachmentQueries.useAttachments(workspaceIdTyped)
   const attachments = attachmentsQuery.data ?? []
+
+  const flashcardsQuery = DataItemQueries.useFlashcards(workspaceIdTyped)
+  const flashcardSets = flashcardsQuery.data ?? []
 
   const uploadFileMutation = AttachmentQueries.useUploadFile()
 
@@ -65,7 +70,7 @@ function WorkspaceOverview() {
   }
 
   return (
-    <div className="flex flex-1 flex-col gap-6 p-6">
+    <div className="flex flex-1 flex-col gap-6 p-6 overflow-y-auto">
       <div>
         <h2 className="text-2xl font-bold">{workspace.name}</h2>
         <p className="text-muted-foreground mt-2">
@@ -92,6 +97,51 @@ function WorkspaceOverview() {
         </Dropzone>
         {uploadFileMutation.isPending && (
           <p className="text-sm text-muted-foreground">Uploading...</p>
+        )}
+      </div>
+
+      {/* Flashcard Sets */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">
+          Flashcard Sets ({flashcardSets.length})
+        </h3>
+        {flashcardSets.length === 0 ? (
+          <p className="text-muted-foreground">No flashcard sets yet</p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {flashcardSets.map((set, setIndex) => (
+              <div
+                key={setIndex}
+                className="p-6 border rounded-lg hover:bg-muted/50 transition-colors"
+              >
+                <div className="space-y-4">
+                  <div className="border-b pb-3">
+                    <h4 className="font-semibold text-lg">{set.topic}</h4>
+                    <p className="text-sm text-muted-foreground">
+                      {set.totalCount} flashcards
+                    </p>
+                  </div>
+                  <div className="space-y-3">
+                    {set.flashcards.map((flashcard, cardIndex) => (
+                      <div
+                        key={cardIndex}
+                        className="p-3 bg-muted/30 rounded border"
+                      >
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">
+                            Q: {flashcard.question}
+                          </div>
+                          <div className="text-sm text-muted-foreground">
+                            A: {flashcard.answer}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         )}
       </div>
 

@@ -37,18 +37,18 @@ function WorkspaceDetail() {
     return workspaceChats?.find((c) => c.id === (params as any).chatId)
   }, [workspaceChats, params])
 
-  // if (!workspace) {
-  //   return (
-  //     <div className="flex items-center justify-center h-screen">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold">Workspace not found</h1>
-  //         <Button asChild className="mt-4">
-  //           <Link to="/">Back to Workspaces</Link>
-  //         </Button>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  if (!workspace) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Workspace not found</h1>
+          <Button asChild className="mt-4">
+            <Link to="/">Back to Workspaces</Link>
+          </Button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <SidebarProvider

@@ -13,12 +13,8 @@ import {
 } from '@effect/platform'
 import { httpClient } from './api'
 import { Chat, ChatDto, ChatId } from '@/types/chat'
-import {
-  Message,
-  MessageDto,
-  type MessageId,
-  MessageRole,
-} from '@/types/message'
+import type { MessageDto, MessageId } from '@/types/message'
+import { Message, MessageRole } from '@/types/message'
 import { type WorkspaceId } from '@/types/workspace'
 import { SERVER_URL } from '@/lib/constants'
 import { useRuntime } from '@/hooks/use-runtime'
