@@ -23,8 +23,8 @@ function ChatPage() {
   const chatQuery = ChatQueries.useChat(workspaceIdTyped, chatIdTyped)
   const chat = chatQuery.data
 
-  const { data: messages = [], isLoading: messagesLoading } =
-    ChatQueries.useMessages(workspaceIdTyped, chatIdTyped)
+  const messagesQuery = ChatQueries.useMessages(workspaceIdTyped, chatIdTyped)
+  const messages = messagesQuery.data ?? []
 
   // Send message mutation with streaming support
   const streamMessage = ChatQueries.useStreamMessage({
@@ -35,7 +35,7 @@ function ChatPage() {
     },
   })
 
-  const isLoading = messagesLoading || streamMessage.isPending
+  const isLoading = messagesQuery.isLoading || streamMessage.isPending
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -49,6 +49,12 @@ function ChatPage() {
   const handleSend = async (content: string) => {
     if (!content.trim()) return
 
+    console.log('handleSend', {
+      content,
+      chatId: chatIdTyped,
+      workspaceId: workspaceIdTyped,
+    })
+
     await streamMessage.mutateAsync({
       workspaceId: workspaceIdTyped,
       chatId: chatIdTyped,
@@ -61,15 +67,15 @@ function ChatPage() {
 
   const isWaitingForResponse = isStreaming || streamMessage.isPending
 
-  // if (!chat) {
-  //   return (
-  //     <div className="flex items-center justify-center h-full">
-  //       <div className="text-center">
-  //         <h1 className="text-2xl font-bold">Chat not found</h1>
-  //       </div>
-  //     </div>
-  //   )
-  // }
+  if (!chat) {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold">Chat not found</h1>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="relative flex flex-col h-[calc(100vh-4rem)]">

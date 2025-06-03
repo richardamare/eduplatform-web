@@ -12,18 +12,16 @@ import {
   HttpClientResponse,
 } from '@effect/platform'
 import { httpClient } from './api'
-import { Chat, type ChatId } from '@/types/chat'
-import { Message, type MessageId, MessageRole } from '@/types/message'
+import { Chat, ChatDto, ChatId } from '@/types/chat'
+import {
+  Message,
+  MessageDto,
+  type MessageId,
+  MessageRole,
+} from '@/types/message'
 import { type WorkspaceId } from '@/types/workspace'
 import { SERVER_URL } from '@/lib/constants'
 import { useRuntime } from '@/hooks/use-runtime'
-
-interface MessageResponse {
-  id: string
-  content: string
-  role: 0 | 1
-  createdAt: string
-}
 
 // API functions
 const chatApi = {
@@ -31,68 +29,66 @@ const chatApi = {
     const http = yield* httpClient
     return yield* http.get(`/workspaces/${workspaceId}/chats`).pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(
-          Schema.Array(Chat.pipe(Schema.omit('_tag'))),
-          {
-            errors: 'all',
-          },
-        ),
+        HttpClientResponse.schemaBodyJson(Schema.Array(ChatDto), {
+          errors: 'all',
+        }),
       ),
       Effect.map((chats) =>
         chats.map(
           (chat) =>
             new Chat({
-              id: chat.id,
+              id: ChatId.make(chat.id),
               name: chat.name,
-              createdAt: new Date(chat.createdAt),
-              updatedAt: new Date(chat.updatedAt),
+              createdAt: new Date(chat.created_at),
+              updatedAt: new Date(chat.updated_at),
             }),
         ),
       ),
       Effect.tapError(Effect.logError),
     )
   }),
+
   getChat: Effect.fn(function* (workspaceId: WorkspaceId, chatId: ChatId) {
     const http = yield* httpClient
-    return yield* http.get(`/workspaces/${workspaceId}/chats/${chatId}`).pipe(
+    return yield* http.get(`/chats/${chatId}`).pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(Chat.pipe(Schema.omit('_tag')), {
+        HttpClientResponse.schemaBodyJson(ChatDto, {
           errors: 'all',
         }),
       ),
       Effect.map(
         (chat) =>
           new Chat({
-            id: chat.id,
+            id: ChatId.make(chat.id),
             name: chat.name,
-            createdAt: new Date(chat.createdAt),
-            updatedAt: new Date(chat.updatedAt),
+            createdAt: new Date(chat.created_at),
+            updatedAt: new Date(chat.updated_at),
           }),
       ),
       Effect.tapError(Effect.logError),
     )
   }),
 
-  createChat: Effect.fn(function* (workspaceId: WorkspaceId, name?: string) {
+  createChat: Effect.fn(function* (workspaceId: WorkspaceId) {
     const http = yield* httpClient
 
-    const request = HttpClientRequest.get(
-      `/workspaces/${workspaceId}/chats`,
-    ).pipe(HttpClientRequest.setBody(yield* HttpBody.json({ name })))
+    const request = HttpClientRequest.post(`/chats`).pipe(
+      HttpClientRequest.setBody(yield* HttpBody.json({ workspaceId })),
+    )
 
     return yield* http.execute(request).pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(Chat.pipe(Schema.omit('_tag')), {
+        HttpClientResponse.schemaBodyJson(ChatDto, {
           errors: 'all',
         }),
       ),
       Effect.map(
         (chat) =>
           new Chat({
-            id: chat.id,
+            id: ChatId.make(chat.id),
             name: chat.name,
-            createdAt: new Date(chat.createdAt),
-            updatedAt: new Date(chat.updatedAt),
+            createdAt: new Date(chat.created_at),
+            updatedAt: new Date(chat.updated_at),
           }),
       ),
       Effect.tapError(Effect.logError),
@@ -104,33 +100,32 @@ const chatApi = {
     chatId: ChatId,
   ) {
     const http = yield* httpClient
-    return yield* http
-      .get(`/workspaces/${workspaceId}/chats/${chatId}/messages`)
-      .pipe(
-        Effect.flatMap(
-          HttpClientResponse.schemaBodyJson(
-            Schema.Array(Message.pipe(Schema.omit('_tag'))),
-            {
-              errors: 'all',
-            },
-          ),
+    return yield* http.get(`/chats/${chatId}/messages`).pipe(
+      Effect.flatMap(
+        HttpClientResponse.schemaBodyJson(
+          Schema.Array(Message.pipe(Schema.omit('_tag'))),
+          {
+            errors: 'all',
+          },
         ),
-        Effect.map((messages) =>
-          messages.map(
-            (message) =>
-              new Message({
-                id: message.id,
-                content: message.content,
-                role:
-                  message.role === 'user'
-                    ? MessageRole.USER
-                    : MessageRole.ASSISTANT,
-                createdAt: new Date(message.createdAt),
-              }),
-          ),
-        ),
-        Effect.tapError(Effect.logError),
-      )
+      ),
+      Effect.map((messages) => {
+        console.log('messages', messages)
+        return messages.map(
+          (message) =>
+            new Message({
+              id: message.id,
+              content: message.content,
+              role:
+                message.role === 'user'
+                  ? MessageRole.USER
+                  : MessageRole.ASSISTANT,
+              createdAt: new Date(message.createdAt),
+            }),
+        )
+      }),
+      Effect.tapError(Effect.logError),
+    )
   }),
 
   async getMessages(chatId: ChatId): Promise<Array<Message>> {
@@ -139,13 +134,13 @@ const chatApi = {
       throw new Error(`Failed to fetch messages: ${response.statusText}`)
     }
 
-    const messages: Array<MessageResponse> = await response.json()
+    const messages: Array<MessageDto> = await response.json()
     return messages.map(
       (msg) =>
         new Message({
           id: msg.id as MessageId,
           content: msg.content,
-          role: msg.role === 0 ? MessageRole.USER : MessageRole.ASSISTANT,
+          role: msg.role === 'user' ? MessageRole.USER : MessageRole.ASSISTANT,
           createdAt: new Date(msg.createdAt),
         }),
     )
@@ -160,12 +155,12 @@ const chatApi = {
     const assistantMessageId = `msg_${Date.now()}` as MessageId
 
     try {
-      const response = await fetch(`${SERVER_URL}/chat/stream`, {
+      const response = await fetch(`${SERVER_URL}/chats/stream`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message: content }),
+        body: JSON.stringify({ message: content, chatId }),
         ...(signal && { signal }),
       })
 
@@ -330,13 +325,8 @@ export namespace ChatQueries {
     const queryClient = useQueryClient()
     const runtime = useRuntime()
     return useMutation({
-      mutationFn: ({
-        workspaceId,
-        name,
-      }: {
-        workspaceId: WorkspaceId
-        name?: string
-      }) => chatApi.createChat(workspaceId, name).pipe(runtime.runPromise),
+      mutationFn: ({ workspaceId }: { workspaceId: WorkspaceId }) =>
+        chatApi.createChat(workspaceId).pipe(runtime.runPromise),
       onSuccess: (newChat, { workspaceId }) => {
         // Update the chats list cache for this workspace
         queryClient.setQueryData<Array<Chat>>(

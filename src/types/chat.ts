@@ -10,3 +10,11 @@ export class Chat extends Schema.TaggedClass<Chat>('Chat')('Chat', {
   createdAt: SchemaUtils.Timestamp,
   updatedAt: SchemaUtils.Timestamp,
 }) {}
+
+export const ChatDto = Schema.Struct({
+  id: Schema.String,
+  name: Chat.fields.name,
+  created_at: Chat.fields.createdAt,
+  updated_at: Chat.fields.updatedAt,
+})
+export type ChatDto = typeof ChatDto.Type

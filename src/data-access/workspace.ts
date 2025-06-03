@@ -15,7 +15,8 @@ import {
 import {
   type CreateWorkspacePayload,
   Workspace,
-  type WorkspaceId,
+  WorkspaceDto,
+  WorkspaceId,
 } from '@/types/workspace'
 import { httpClient } from '@/data-access/api.ts'
 import { useRuntime } from '@/hooks/use-runtime.ts'
@@ -26,24 +27,19 @@ const workspaceApi = {
 
     return yield* client.get('/workspaces').pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(
-          Schema.Array(Workspace.pipe(Schema.omit('_tag'))),
-          {
-            errors: 'all',
-          },
-        ),
+        HttpClientResponse.schemaBodyJson(Schema.Array(WorkspaceDto)),
       ),
-      Effect.map((workspaces) =>
-        workspaces.map(
+      Effect.map((workspaces) => {
+        return workspaces.map(
           (workspace) =>
             new Workspace({
-              id: workspace.id,
+              id: WorkspaceId.make(workspace.id),
               name: workspace.name,
-              createdAt: new Date(workspace.createdAt),
-              updatedAt: new Date(workspace.updatedAt),
+              createdAt: new Date(workspace.created_at),
+              updatedAt: new Date(workspace.updated_at),
             }),
-        ),
-      ),
+        )
+      }),
       Effect.tapError(Effect.logError),
     )
   }),
@@ -56,16 +52,14 @@ const workspaceApi = {
     )
 
     return yield* client.execute(request).pipe(
-      Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(Workspace.pipe(Schema.omit('_tag'))),
-      ),
+      Effect.flatMap(HttpClientResponse.schemaBodyJson(WorkspaceDto)),
       Effect.map(
         (workspace) =>
           new Workspace({
-            id: workspace.id,
+            id: WorkspaceId.make(workspace.id),
             name: workspace.name,
-            createdAt: new Date(workspace.createdAt),
-            updatedAt: new Date(workspace.updatedAt),
+            createdAt: new Date(workspace.created_at),
+            updatedAt: new Date(workspace.updated_at),
           }),
       ),
       Effect.tapError(Effect.logError),
@@ -76,16 +70,14 @@ const workspaceApi = {
     const client = yield* httpClient
 
     return yield* client.get(`/workspaces/${id}`).pipe(
-      Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(Workspace.pipe(Schema.omit('_tag'))),
-      ),
+      Effect.flatMap(HttpClientResponse.schemaBodyJson(WorkspaceDto)),
       Effect.map(
         (workspace) =>
           new Workspace({
-            id: workspace.id,
+            id: WorkspaceId.make(workspace.id),
             name: workspace.name,
-            createdAt: new Date(workspace.createdAt),
-            updatedAt: new Date(workspace.updatedAt),
+            createdAt: new Date(workspace.created_at),
+            updatedAt: new Date(workspace.updated_at),
           }),
       ),
       Effect.tapError(Effect.logError),
@@ -100,16 +92,14 @@ const workspaceApi = {
     )
 
     return yield* client.execute(request).pipe(
-      Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(Workspace.pipe(Schema.omit('_tag'))),
-      ),
+      Effect.flatMap(HttpClientResponse.schemaBodyJson(WorkspaceDto)),
       Effect.map(
         (workspace) =>
           new Workspace({
-            id: workspace.id,
+            id: WorkspaceId.make(workspace.id),
             name: workspace.name,
-            createdAt: new Date(workspace.createdAt),
-            updatedAt: new Date(workspace.updatedAt),
+            createdAt: new Date(workspace.created_at),
+            updatedAt: new Date(workspace.updated_at),
           }),
       ),
       Effect.tapError(Effect.logError),

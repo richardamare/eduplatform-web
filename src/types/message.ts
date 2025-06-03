@@ -24,3 +24,11 @@ export class CreateMessagePayload extends Schema.TaggedClass<CreateMessagePayloa
   role: Message.fields.role,
   createdAt: Message.fields.createdAt.pipe(Schema.optional),
 }) {}
+
+export const MessageDto = Schema.Struct({
+  id: Schema.String,
+  content: Schema.String,
+  role: Schema.String,
+  createdAt: SchemaUtils.Timestamp,
+})
+export type MessageDto = typeof MessageDto.Type
