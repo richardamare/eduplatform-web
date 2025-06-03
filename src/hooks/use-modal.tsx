@@ -3,6 +3,7 @@ import { create } from 'zustand'
 export enum MODAL_TYPE {
   CREATE_WORKSPACE = 'CREATE_WORKSPACE',
   RENAME_CHAT = 'RENAME_CHAT',
+  GENERATE_FLASHCARDS = 'GENERATE_FLASHCARDS',
 }
 
 interface CreateWorkspaceModalPayload {
@@ -17,9 +18,17 @@ interface RenameChatModalPayload {
   }
 }
 
+interface GenerateFlashcardsModalPayload {
+  type: MODAL_TYPE.GENERATE_FLASHCARDS
+  props: {
+    workspaceId: string
+  }
+}
+
 export type OpenModalPayload =
   | CreateWorkspaceModalPayload
   | RenameChatModalPayload
+  | GenerateFlashcardsModalPayload
 
 type ModalState = {
   isOpen: boolean

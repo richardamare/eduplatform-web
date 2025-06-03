@@ -1,5 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { FileText, Image, FileIcon } from 'lucide-react'
+import { FileText, Image, FileIcon, Sparkles } from 'lucide-react'
 import { WorkspaceId } from '@/types/workspace'
 import { WorkspaceQueries } from '@/data-access/workspace'
 import { AttachmentQueries } from '@/data-access/attachment'
@@ -10,6 +10,8 @@ import {
   DropzoneEmptyState,
 } from '@/components/ui/kibo-ui/dropzone'
 import { AttachmentType, AttachmentStatus } from '@/types/attachment'
+import { Button } from '@/components/ui/button'
+import { useModal, MODAL_TYPE } from '@/hooks/use-modal'
 
 export const Route = createFileRoute('/w/$id/')({
   component: WorkspaceOverview,
@@ -18,6 +20,7 @@ export const Route = createFileRoute('/w/$id/')({
 function WorkspaceOverview() {
   const { id } = Route.useParams()
   const workspaceIdTyped = WorkspaceId.make(id)
+  const openModal = useModal((state) => state.open)
 
   const workspaceQuery = WorkspaceQueries.useWorkspace(workspaceIdTyped)
   const workspace = workspaceQuery.data
@@ -101,11 +104,44 @@ function WorkspaceOverview() {
 
       {/* Flashcard Sets */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">
-          Flashcard Sets ({flashcardSets.length})
-        </h3>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-semibold">
+            Flashcard Sets ({flashcardSets.length})
+          </h3>
+          <Button
+            onClick={() =>
+              openModal({
+                type: MODAL_TYPE.GENERATE_FLASHCARDS,
+                props: { workspaceId: id },
+              })
+            }
+            className="flex items-center gap-2"
+          >
+            <Sparkles className="h-4 w-4" />
+            Generate Flashcards
+          </Button>
+        </div>
         {flashcardSets.length === 0 ? (
-          <p className="text-muted-foreground">No flashcard sets yet</p>
+          <div className="text-center py-8 border-2 border-dashed border-muted-foreground/25 rounded-lg">
+            <Sparkles className="h-8 w-8 mx-auto mb-3 text-muted-foreground/50" />
+            <p className="text-muted-foreground mb-3">No flashcard sets yet</p>
+            <p className="text-sm text-muted-foreground/75 mb-4">
+              Generate AI-powered flashcards on any topic to start studying
+            </p>
+            <Button
+              onClick={() =>
+                openModal({
+                  type: MODAL_TYPE.GENERATE_FLASHCARDS,
+                  props: { workspaceId: id },
+                })
+              }
+              variant="outline"
+              className="flex items-center gap-2"
+            >
+              <Sparkles className="h-4 w-4" />
+              Generate Your First Set
+            </Button>
+          </div>
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {flashcardSets.map((set, setIndex) => (
@@ -132,7 +168,7 @@ function WorkspaceOverview() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {set.flashcards.map((flashcard, cardIndex) => (
+                    {set.flashcards.slice(0, 2).map((flashcard, cardIndex) => (
                       <div
                         key={cardIndex}
                         className="p-3 bg-muted/30 rounded border"

@@ -1,4 +1,5 @@
 import { MODAL_TYPE, useModal } from '@/hooks/use-modal'
+import { GenerateFlashcardsDialog } from '@/components/generate-flashcards-dialog'
 
 export const ModalProvider = () => {
   const modals = useModal((state) => state.modals)
@@ -8,9 +9,17 @@ export const ModalProvider = () => {
       {Object.entries(modals).map(([id, { type, props }]) => {
         switch (type) {
           case MODAL_TYPE.CREATE_WORKSPACE:
-            return <div>CreateWorkspaceDialog</div>
+            return <div key={id}>CreateWorkspaceDialog</div>
           case MODAL_TYPE.RENAME_CHAT:
-            return <div>RenameChatDialog</div>
+            return <div key={id}>RenameChatDialog</div>
+          case MODAL_TYPE.GENERATE_FLASHCARDS:
+            return (
+              <GenerateFlashcardsDialog
+                key={id}
+                id={id}
+                workspaceId={props.workspaceId}
+              />
+            )
           default:
             return null
         }

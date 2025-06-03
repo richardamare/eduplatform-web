@@ -8,8 +8,10 @@ import {
 } from '@effect/platform'
 import { DataItem, DataItemDto, FlashcardDto } from '@/types/data-item'
 import {
+  useMutation,
   useQuery,
   useQueryClient,
+  type UseMutationOptions,
   type UseQueryOptions,
 } from '@tanstack/react-query'
 import { useRuntime } from '@/hooks/use-runtime'
@@ -30,10 +32,15 @@ export const dataItemApi = {
       ),
     )
   }),
-  createFlashcard: Effect.fn(function* (workspaceId: WorkspaceId) {
+  createFlashcard: Effect.fn(function* (
+    workspaceId: WorkspaceId,
+    topic: string,
+  ) {
     const http = yield* httpClient
     const request = HttpClientRequest.post('/flashcards').pipe(
-      HttpClientRequest.setBody(yield* HttpBody.json({ workspaceId })),
+      HttpClientRequest.setBody(
+        yield* HttpBody.json({ workspaceId, workspace_id: workspaceId, topic }),
+      ),
     )
 
     return yield* http.execute(request).pipe(
@@ -89,6 +96,27 @@ export namespace DataItemQueries {
         return res as Array<FlashcardDto>
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
+      ...options,
+    })
+  }
+
+  export type CreateFlashcardMutationOptions = Omit<
+    UseMutationOptions<
+      DataItem,
+      Error,
+      { workspaceId: WorkspaceId; topic: string }
+    >,
+    'mutationFn'
+  >
+
+  export const useCreate = (options?: CreateFlashcardMutationOptions) => {
+    const runtime = useRuntime()
+
+    return useMutation({
+      mutationFn: (data: { workspaceId: WorkspaceId; topic: string }) =>
+        dataItemApi
+          .createFlashcard(data.workspaceId, data.topic)
+          .pipe(runtime.runPromise),
       ...options,
     })
   }
