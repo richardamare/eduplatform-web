@@ -23,6 +23,7 @@ import { Button } from '@/components/ui/button'
 import { useModal } from '@/hooks/use-modal'
 import { DataItemQueries } from '@/data-access/data-item'
 import { WorkspaceId } from '@/types/workspace'
+import { useQueryClient } from '@tanstack/react-query'
 
 const generateFlashcardsSchema = z.object({
   topic: z.string().min(1, 'Topic is required').max(100, 'Topic too long'),
@@ -43,9 +44,16 @@ export function GenerateFlashcardsDialog({
   const modal = get(id)
   const [isLoading, setIsLoading] = useState(false)
 
+  const queryClient = useQueryClient()
+
   const createFlashcardMutation = DataItemQueries.useCreate({
     onSuccess: () => {
       handleClose()
+      queryClient.invalidateQueries({
+        queryKey: DataItemQueries.queryKeys.flashcards(
+          WorkspaceId.make(workspaceId),
+        ),
+      })
     },
   })
 

@@ -115,6 +115,44 @@ function WorkspaceOverview() {
         )}
       </div>
 
+      {/* Attachments List */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold">
+          Attachments ({attachments.length})
+        </h3>
+        {attachments.length === 0 ? (
+          <p className="text-muted-foreground">No attachments yet</p>
+        ) : (
+          <div className="space-y-2">
+            {attachments.map((attachment) => (
+              <div
+                key={attachment.id}
+                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50"
+              >
+                <div className="flex-shrink-0">
+                  {getAttachmentIcon(attachment.type)}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium truncate">{attachment.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {attachment.type.toUpperCase()} •{' '}
+                    {attachment.createdAt.toLocaleDateString()}
+                  </p>
+                </div>
+                {attachment.previewUrl && (
+                  <button
+                    onClick={() => window.open(attachment.previewUrl, '_blank')}
+                    className="text-sm text-blue-600 hover:text-blue-800"
+                  >
+                    Preview
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
       {/* Flashcard Sets */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
@@ -290,44 +328,6 @@ function WorkspaceOverview() {
                       ))}
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* Attachments List */}
-      <div className="space-y-4">
-        <h3 className="text-lg font-semibold">
-          Attachments ({attachments.length})
-        </h3>
-        {attachments.length === 0 ? (
-          <p className="text-muted-foreground">No attachments yet</p>
-        ) : (
-          <div className="space-y-2">
-            {attachments.map((attachment) => (
-              <div
-                key={attachment.id}
-                className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50"
-              >
-                <div className="flex-shrink-0">
-                  {getAttachmentIcon(attachment.type)}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{attachment.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {attachment.type.toUpperCase()} •{' '}
-                    {attachment.createdAt.toLocaleDateString()}
-                  </p>
-                </div>
-                {attachment.previewUrl && (
-                  <button
-                    onClick={() => window.open(attachment.previewUrl, '_blank')}
-                    className="text-sm text-blue-600 hover:text-blue-800"
-                  >
-                    Preview
-                  </button>
-                )}
               </div>
             ))}
           </div>
