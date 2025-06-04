@@ -39,7 +39,6 @@ function WorkspaceOverview() {
 
   const examsQuery = DataItemQueries.useExams(workspaceIdTyped)
   const exams = examsQuery.data ?? []
-  console.log('exams', exams)
 
   const uploadFileMutation = AttachmentQueries.useUploadFile()
 
@@ -318,10 +317,7 @@ function WorkspaceOverview() {
                   <p className="font-medium truncate">{attachment.name}</p>
                   <p className="text-sm text-muted-foreground">
                     {attachment.type.toUpperCase()} •{' '}
-                    <span className={getStatusColor(attachment.status)}>
-                      {attachment.status}
-                    </span>{' '}
-                    • {attachment.createdAt.toLocaleDateString()}
+                    {attachment.createdAt.toLocaleDateString()}
                   </p>
                 </div>
                 {attachment.previewUrl && (
