@@ -40,22 +40,34 @@ function ExamDetail() {
   const getAnswerOptions = () => ['A', 'B', 'C', 'D']
 
   const getAnswerText = (question: any, option: string) => {
+    let answerValue
     switch (option) {
       case 'A':
       case 'answerA':
-        return question.answerA
+        answerValue = question.answerA
+        break
       case 'B':
       case 'answerB':
-        return question.answerB
+        answerValue = question.answerB
+        break
       case 'C':
       case 'answerC':
-        return question.answerC
+        answerValue = question.answerC
+        break
       case 'D':
       case 'answerD':
-        return question.answerD
+        answerValue = question.answerD
+        break
       default:
         return ''
     }
+
+    // Handle case where answer might be an object with a text property
+    if (typeof answerValue === 'object' && answerValue?.text) {
+      return answerValue.text
+    }
+
+    return answerValue || ''
   }
 
   const getAnswerLetter = (question: any, option: string) => {
@@ -74,7 +86,13 @@ function ExamDetail() {
   }
 
   const isCorrectAnswer = (questionIndex: number, answer: string) => {
-    return currentExam.testQuestions[questionIndex].correct_answer === answer
+    const correctAnswer =
+      currentExam.testQuestions[questionIndex].correct_answer
+    const correctAnswerLetter = getAnswerLetter(
+      currentExam.testQuestions[questionIndex],
+      correctAnswer,
+    )
+    return correctAnswerLetter === answer
   }
 
   const getAnswerColor = (questionIndex: number, option: string) => {
@@ -198,10 +216,8 @@ function ExamDetail() {
                 <div className="pl-8 pt-2 text-sm text-muted-foreground">
                   Correct answer:{' '}
                   <span className="font-semibold text-green-700">
-                    {getAnswerLetter(question, question.correct_answer)})&nbsp;
-                    <span className="font-semibold text-green-700">
-                      {getAnswerText(question, question.correct_answer)}
-                    </span>
+                    {getAnswerLetter(question, question.correct_answer)}){' '}
+                    {getAnswerText(question, question.correct_answer)}
                   </span>
                 </div>
               )}
