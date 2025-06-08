@@ -124,24 +124,6 @@ const chatApi = {
     )
   }),
 
-  async getMessages(chatId: ChatId): Promise<Array<Message>> {
-    const response = await fetch(`${SERVER_URL}/chats/${chatId}/messages`)
-    if (!response.ok) {
-      throw new Error(`Failed to fetch messages: ${response.statusText}`)
-    }
-
-    const messages: Array<MessageDto> = await response.json()
-    return messages.map(
-      (msg) =>
-        new Message({
-          id: msg.id as MessageId,
-          content: msg.content,
-          role: msg.role === 'user' ? MessageRole.USER : MessageRole.ASSISTANT,
-          createdAt: new Date(msg.createdAt),
-        }),
-    )
-  },
-
   async streamMessage(
     chatId: ChatId,
     content: string,
@@ -357,9 +339,12 @@ export namespace ChatQueries {
     chatId: ChatId,
     options?: MessagesQueryOptions,
   ) => {
+    const runtime = useRuntime()
+
     return useQuery({
       queryKey: queryKeys.messagesList(workspaceId, chatId),
-      queryFn: () => chatApi.getMessages(chatId),
+      queryFn: () =>
+        chatApi.getChatMessages(workspaceId, chatId).pipe(runtime.runPromise),
       staleTime: 1 * 60 * 1000, // 1 minute
       ...options,
     })
@@ -502,11 +487,13 @@ export namespace ChatQueries {
 
   export const usePrefetchMessages = () => {
     const queryClient = useQueryClient()
+    const runtime = useRuntime()
 
     return (workspaceId: WorkspaceId, chatId: ChatId) => {
       queryClient.prefetchQuery({
         queryKey: queryKeys.messagesList(workspaceId, chatId),
-        queryFn: () => chatApi.getMessages(chatId),
+        queryFn: () =>
+          chatApi.getChatMessages(workspaceId, chatId).pipe(runtime.runPromise),
         staleTime: 1 * 60 * 1000,
       })
     }

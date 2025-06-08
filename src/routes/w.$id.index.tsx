@@ -8,14 +8,13 @@ import {
 } from 'lucide-react'
 import { WorkspaceId } from '@/types/workspace'
 import { WorkspaceQueries } from '@/data-access/workspace'
-import { AttachmentQueries } from '@/data-access/attachment'
-import { DataItemQueries } from '@/data-access/data-item'
+import { SourceFileQueries } from '@/data-access/source-file'
+import { GeneratedContentQueries } from '@/data-access/generated-content'
 import {
   Dropzone,
   DropzoneContent,
   DropzoneEmptyState,
 } from '@/components/ui/kibo-ui/dropzone'
-import { AttachmentType, AttachmentStatus } from '@/types/attachment'
 import { Button } from '@/components/ui/button'
 import { useModal, MODAL_TYPE } from '@/hooks/use-modal'
 
@@ -31,44 +30,33 @@ function WorkspaceOverview() {
   const workspaceQuery = WorkspaceQueries.useWorkspace(workspaceIdTyped)
   const workspace = workspaceQuery.data
 
-  const attachmentsQuery = AttachmentQueries.useAttachments(workspaceIdTyped)
-  const attachments = attachmentsQuery.data ?? []
+  const sourceFilesQuery = SourceFileQueries.useSourceFiles(workspaceIdTyped)
+  const sourceFiles = sourceFilesQuery.data ?? []
 
-  const flashcardsQuery = DataItemQueries.useFlashcards(workspaceIdTyped)
+  const flashcardsQuery =
+    GeneratedContentQueries.useFlashcards(workspaceIdTyped)
   const flashcardSets = flashcardsQuery.data ?? []
 
-  const examsQuery = DataItemQueries.useExams(workspaceIdTyped)
+  const examsQuery = GeneratedContentQueries.useExams(workspaceIdTyped)
   const exams = examsQuery.data ?? []
 
-  const uploadFileMutation = AttachmentQueries.useUploadFile()
+  const uploadFileMutation = SourceFileQueries.useUploadFile()
 
   const handleFileDrop = (acceptedFiles: Array<File>) => {
+    console.log('acceptedFiles', acceptedFiles)
     acceptedFiles.forEach((file) => {
       uploadFileMutation.mutate({ workspaceId: workspaceIdTyped, file })
     })
   }
 
-  const getAttachmentIcon = (type: AttachmentType) => {
+  const getSourceFileIcon = (type: string) => {
     switch (type) {
-      case AttachmentType.PDF:
+      case 'pdf':
         return <FileText className="h-4 w-4" />
-      case AttachmentType.IMAGE:
+      case 'image':
         return <Image className="h-4 w-4" />
       default:
         return <FileIcon className="h-4 w-4" />
-    }
-  }
-
-  const getStatusColor = (status: AttachmentStatus) => {
-    switch (status) {
-      case AttachmentStatus.READY:
-        return 'text-green-600'
-      case AttachmentStatus.PROCESSING:
-        return 'text-yellow-600'
-      case AttachmentStatus.UPLOADED:
-        return 'text-blue-600'
-      default:
-        return 'text-gray-600'
     }
   }
 
@@ -89,7 +77,7 @@ function WorkspaceOverview() {
       <div>
         <h2 className="text-2xl font-bold">{workspace.name}</h2>
         <p className="text-muted-foreground mt-2">
-          Manage your workspace files and attachments
+          Manage your workspace files and generated content
         </p>
       </div>
 
@@ -115,38 +103,36 @@ function WorkspaceOverview() {
         )}
       </div>
 
-      {/* Attachments List */}
+      {/* Files List */}
       <div className="space-y-4">
-        <h3 className="text-lg font-semibold">
-          Attachments ({attachments.length})
-        </h3>
-        {attachments.length === 0 ? (
-          <p className="text-muted-foreground">No attachments yet</p>
+        <h3 className="text-lg font-semibold">Files ({sourceFiles.length})</h3>
+        {sourceFiles.length === 0 ? (
+          <p className="text-muted-foreground">No files yet</p>
         ) : (
           <div className="space-y-2">
-            {attachments.map((attachment) => (
+            {sourceFiles.map((sourceFile) => (
               <div
-                key={attachment.id}
+                key={sourceFile.id}
                 className="flex items-center gap-3 p-3 border rounded-lg hover:bg-muted/50"
               >
                 <div className="flex-shrink-0">
-                  {getAttachmentIcon(attachment.type)}
+                  {getSourceFileIcon(sourceFile.type)}
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium truncate">{attachment.name}</p>
+                  <p className="font-medium truncate">{sourceFile.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {attachment.type.toUpperCase()} •{' '}
-                    {attachment.createdAt.toLocaleDateString()}
+                    {sourceFile.type.toUpperCase()} •{' '}
+                    {sourceFile.createdAt.toLocaleDateString()}
                   </p>
                 </div>
-                {attachment.previewUrl && (
+                {/* {sourceFile.previewUrl && (
                   <button
-                    onClick={() => window.open(attachment.previewUrl, '_blank')}
+                    onClick={() => window.open(sourceFile.previewUrl, '_blank')}
                     className="text-sm text-blue-600 hover:text-blue-800"
                   >
                     Preview
                   </button>
-                )}
+                )} */}
               </div>
             ))}
           </div>

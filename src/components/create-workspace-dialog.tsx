@@ -21,46 +21,39 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useModal } from '@/hooks/use-modal'
-import { GeneratedContentQueries } from '@/data-access/generated-content'
-import { WorkspaceId } from '@/types/workspace'
 import { useQueryClient } from '@tanstack/react-query'
+import { WorkspaceQueries } from '@/data-access/workspace'
 
-const generateExamsSchema = z.object({
-  topic: z.string().min(1, 'Topic is required').max(100, 'Topic too long'),
+const createWorkspaceSchema = z.object({
+  name: z.string().min(1, 'Name is required').max(100, 'Name too long'),
 })
 
-type GenerateExamsForm = z.infer<typeof generateExamsSchema>
+type CreateWorkspaceForm = z.infer<typeof createWorkspaceSchema>
 
-interface GenerateExamsDialogProps {
+interface CreateWorkspaceDialogProps {
   id: string
-  workspaceId: string
 }
 
-export function GenerateExamsDialog({
-  id,
-  workspaceId,
-}: GenerateExamsDialogProps) {
+export function CreateWorkspaceDialog({ id }: CreateWorkspaceDialogProps) {
   const { get, close } = useModal()
   const modal = get(id)
   const [isLoading, setIsLoading] = useState(false)
 
   const queryClient = useQueryClient()
 
-  const createExamMutation = GeneratedContentQueries.useCreateExam({
+  const createWorkspaceMutation = WorkspaceQueries.useCreateWorkspace({
     onSuccess: () => {
       handleClose()
       queryClient.invalidateQueries({
-        queryKey: GeneratedContentQueries.queryKeys.exams(
-          WorkspaceId.make(workspaceId),
-        ),
+        queryKey: WorkspaceQueries.queryKeys.lists(),
       })
     },
   })
 
-  const form = useForm<GenerateExamsForm>({
-    resolver: zodResolver(generateExamsSchema),
+  const form = useForm<CreateWorkspaceForm>({
+    resolver: zodResolver(createWorkspaceSchema),
     defaultValues: {
-      topic: '',
+      name: '',
     },
   })
 
@@ -69,13 +62,13 @@ export function GenerateExamsDialog({
     form.reset()
   }
 
-  const onSubmit = async (data: GenerateExamsForm) => {
+  const onSubmit = async (data: CreateWorkspaceForm) => {
     try {
       setIsLoading(true)
 
-      createExamMutation.mutate({
-        workspaceId: WorkspaceId.make(workspaceId),
-        topic: data.topic,
+      createWorkspaceMutation.mutate({
+        _tag: 'CreateWorkspacePayload',
+        name: data.name,
       })
 
       handleClose()
@@ -100,15 +93,12 @@ export function GenerateExamsDialog({
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
-              name="topic"
+              name="name"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Topic</FormLabel>
+                  <FormLabel>Name</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="e.g., JavaScript fundamentals, European History, Algebra..."
-                      {...field}
-                    />
+                    <Input placeholder="e.g., My Workspace" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -124,7 +114,7 @@ export function GenerateExamsDialog({
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading}>
-                {isLoading ? 'Generating...' : 'Generate Exam'}
+                {isLoading ? 'Creating...' : 'Create Workspace'}
               </Button>
             </DialogFooter>
           </form>

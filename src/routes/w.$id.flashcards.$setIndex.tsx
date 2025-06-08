@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ChevronLeft, ChevronRight, ArrowLeft } from 'lucide-react'
 import { WorkspaceId } from '@/types/workspace'
-import { DataItemQueries } from '@/data-access/data-item'
+import { GeneratedContentQueries } from '@/data-access/generated-content'
 
 export const Route = createFileRoute('/w/$id/flashcards/$setIndex')({
   component: FlashcardDetail,
@@ -14,7 +14,8 @@ function FlashcardDetail() {
   const workspaceIdTyped = WorkspaceId.make(id)
   const setIndexNumber = parseInt(setIndex, 10)
 
-  const flashcardsQuery = DataItemQueries.useFlashcards(workspaceIdTyped)
+  const flashcardsQuery =
+    GeneratedContentQueries.useFlashcards(workspaceIdTyped)
   const flashcardSets = flashcardsQuery.data ?? []
   const currentSet = flashcardSets[setIndexNumber]
 

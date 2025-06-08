@@ -21,7 +21,7 @@ import {
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
 import { useModal } from '@/hooks/use-modal'
-import { DataItemQueries } from '@/data-access/data-item'
+import { GeneratedContentQueries } from '@/data-access/generated-content'
 import { WorkspaceId } from '@/types/workspace'
 import { useQueryClient } from '@tanstack/react-query'
 
@@ -46,11 +46,11 @@ export function GenerateFlashcardsDialog({
 
   const queryClient = useQueryClient()
 
-  const createFlashcardMutation = DataItemQueries.useCreate({
+  const createFlashcardMutation = GeneratedContentQueries.useCreate({
     onSuccess: () => {
       handleClose()
       queryClient.invalidateQueries({
-        queryKey: DataItemQueries.queryKeys.flashcards(
+        queryKey: GeneratedContentQueries.queryKeys.flashcards(
           WorkspaceId.make(workspaceId),
         ),
       })

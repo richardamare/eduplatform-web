@@ -2,7 +2,7 @@ import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useState } from 'react'
 import { ArrowLeft, CheckCircle, XCircle } from 'lucide-react'
 import { WorkspaceId } from '@/types/workspace'
-import { DataItemQueries } from '@/data-access/data-item'
+import { GeneratedContentQueries } from '@/data-access/generated-content'
 import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/w/$id/exams/$examIndex')({
@@ -15,7 +15,7 @@ function ExamDetail() {
   const workspaceIdTyped = WorkspaceId.make(id)
   const examIndexNumber = parseInt(examIndex, 10)
 
-  const examsQuery = DataItemQueries.useExams(workspaceIdTyped)
+  const examsQuery = GeneratedContentQueries.useExams(workspaceIdTyped)
   const exams = examsQuery.data ?? []
   const currentExam = exams[examIndexNumber]
 

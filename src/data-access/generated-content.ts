@@ -16,7 +16,7 @@ import {
 } from '@tanstack/react-query'
 import { useRuntime } from '@/hooks/use-runtime'
 
-export const dataItemApi = {
+export const generatedContentApi = {
   getFlashcards: Effect.fn(function* (workspaceId: WorkspaceId) {
     const http = yield* httpClient
 
@@ -83,7 +83,7 @@ export const dataItemApi = {
   }),
 }
 
-export namespace DataItemQueries {
+export namespace GeneratedContentQueries {
   export const queryKeys = {
     all: ['data-items'],
     flashcards: (workspaceId: WorkspaceId) => [
@@ -111,10 +111,8 @@ export namespace DataItemQueries {
 
     return useQuery({
       queryKey: queryKeys.flashcards(workspaceId),
-      // queryFn: () =>
-      // dataItemApi.getFlashcards(workspaceId).pipe(runtime.runPromise),
       queryFn: async () => {
-        const res = await dataItemApi
+        const res = await generatedContentApi
           .getFlashcards(workspaceId)
           .pipe(runtime.runPromise)
 
@@ -139,7 +137,7 @@ export namespace DataItemQueries {
 
     return useMutation({
       mutationFn: (data: { workspaceId: WorkspaceId; topic: string }) =>
-        dataItemApi
+        generatedContentApi
           .createFlashcard(data.workspaceId, data.topic)
           .pipe(runtime.runPromise),
       ...options,
@@ -160,7 +158,7 @@ export namespace DataItemQueries {
     return useQuery({
       queryKey: queryKeys.exams(workspaceId),
       queryFn: async () => {
-        const res = await dataItemApi
+        const res = await generatedContentApi
           .getExams(workspaceId)
           .pipe(runtime.runPromise)
 
@@ -185,14 +183,14 @@ export namespace DataItemQueries {
 
     return useMutation({
       mutationFn: (data: { workspaceId: WorkspaceId; topic: string }) =>
-        dataItemApi
+        generatedContentApi
           .createExam(data.workspaceId, data.topic)
           .pipe(runtime.runPromise),
       ...options,
     })
   }
 
-  export const useInvalidateDataItems = () => {
+  export const useInvalidateGeneratedContent = () => {
     const queryClient = useQueryClient()
 
     return {
