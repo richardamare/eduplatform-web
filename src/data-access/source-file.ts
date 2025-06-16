@@ -55,11 +55,13 @@ const fileApi = {
   ) {
     const client = yield* httpClient
 
+    const fileName = encodeURIComponent(file.name.replace(/\s+/g, '_'))
+
     const uploadUrlRequest = yield* HttpClientRequest.post(
       `/files/${workspaceId}/upload-url`,
     ).pipe(
       HttpClientRequest.bodyJson({
-        fileName: file.name,
+        fileName,
         fileSize: file.size,
         mimeType: file.type,
       }),
@@ -76,25 +78,31 @@ const fileApi = {
       ),
     )
 
-    const uploadFileRequest = HttpClientRequest.put(
-      uploadUrlResponse.upload_url,
-    ).pipe(
-      HttpClientRequest.setUrl(uploadUrlResponse.upload_url),
-      HttpClientRequest.setHeaders({
-        'x-ms-blob-type': 'BlockBlob',
-        'Content-Type': file.type,
-      }),
-      HttpClientRequest.setBody(HttpBody.fileWeb(file)),
-    )
+    const uploadFileRequest = uploadUrlResponse.upload_url
 
-    yield* HttpClient.execute(uploadFileRequest)
+    yield* Effect.tryPromise(() =>
+      fetch(uploadFileRequest, {
+        method: 'PUT',
+        headers: {
+          'x-ms-blob-type': 'BlockBlob',
+          'Content-Type': file.type,
+        },
+        body: file,
+      }),
+    ).pipe(
+      Effect.flatMap((response) =>
+        response.ok
+          ? Effect.succeed(undefined)
+          : Effect.fail(new Error(`Upload failed: ${response.status}`)),
+      ),
+    )
 
     const confirmUploadRequest = yield* HttpClientRequest.post(
       `/files/${workspaceId}/confirm-upload`,
     ).pipe(
       HttpClientRequest.bodyJson({
-        blob_name: uploadUrlResponse.blob_name,
-        file_name: file.name,
+        blobName: uploadUrlResponse.blob_name,
+        fileName,
       }),
     )
 

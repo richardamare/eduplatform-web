@@ -29,6 +29,6 @@ export const MessageDto = Schema.Struct({
   id: Schema.String,
   content: Schema.String,
   role: Schema.String,
-  createdAt: SchemaUtils.Timestamp,
+  created_at: SchemaUtils.Timestamp,
 })
 export type MessageDto = typeof MessageDto.Type

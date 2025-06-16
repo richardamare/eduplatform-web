@@ -13,8 +13,7 @@ import {
 } from '@effect/platform'
 import { httpClient } from './api'
 import { Chat, ChatDto, ChatId } from '@/types/chat'
-import type { MessageDto, MessageId } from '@/types/message'
-import { Message, MessageRole } from '@/types/message'
+import { MessageDto, MessageId, Message, MessageRole } from '@/types/message'
 import { type WorkspaceId } from '@/types/workspace'
 import { SERVER_URL } from '@/lib/constants'
 import { useRuntime } from '@/hooks/use-runtime'
@@ -91,32 +90,26 @@ const chatApi = {
     )
   }),
 
-  getChatMessages: Effect.fn(function* (
-    workspaceId: WorkspaceId,
-    chatId: ChatId,
-  ) {
+  getChatMessages: Effect.fn(function* (chatId: ChatId) {
     const http = yield* httpClient
     return yield* http.get(`/chats/${chatId}/messages`).pipe(
       Effect.flatMap(
-        HttpClientResponse.schemaBodyJson(
-          Schema.Array(Message.pipe(Schema.omit('_tag'))),
-          {
-            errors: 'all',
-          },
-        ),
+        HttpClientResponse.schemaBodyJson(Schema.Array(MessageDto), {
+          errors: 'all',
+        }),
       ),
       Effect.map((messages) => {
         console.log('messages', messages)
         return messages.map(
           (message) =>
             new Message({
-              id: message.id,
+              id: MessageId.make(message.id),
               content: message.content,
               role:
                 message.role === 'user'
                   ? MessageRole.USER
                   : MessageRole.ASSISTANT,
-              createdAt: new Date(message.createdAt),
+              createdAt: new Date(message.created_at),
             }),
         )
       }),
@@ -343,8 +336,7 @@ export namespace ChatQueries {
 
     return useQuery({
       queryKey: queryKeys.messagesList(workspaceId, chatId),
-      queryFn: () =>
-        chatApi.getChatMessages(workspaceId, chatId).pipe(runtime.runPromise),
+      queryFn: () => chatApi.getChatMessages(chatId).pipe(runtime.runPromise),
       staleTime: 1 * 60 * 1000, // 1 minute
       ...options,
     })
@@ -492,8 +484,7 @@ export namespace ChatQueries {
     return (workspaceId: WorkspaceId, chatId: ChatId) => {
       queryClient.prefetchQuery({
         queryKey: queryKeys.messagesList(workspaceId, chatId),
-        queryFn: () =>
-          chatApi.getChatMessages(workspaceId, chatId).pipe(runtime.runPromise),
+        queryFn: () => chatApi.getChatMessages(chatId).pipe(runtime.runPromise),
         staleTime: 1 * 60 * 1000,
       })
     }

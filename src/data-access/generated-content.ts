@@ -39,7 +39,12 @@ export const generatedContentApi = {
     const http = yield* httpClient
     const request = HttpClientRequest.post('/flashcards').pipe(
       HttpClientRequest.setBody(
-        yield* HttpBody.json({ workspaceId, workspace_id: workspaceId, topic }),
+        yield* HttpBody.json({
+          workspaceId,
+          workspace_id: workspaceId,
+          topic,
+          numCards: 5,
+        }),
       ),
     )
 
