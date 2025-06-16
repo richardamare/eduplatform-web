@@ -22,29 +22,62 @@ export const DataItemDto = Schema.Struct({
 export type DataItemDto = typeof DataItemDto.Type
 
 export const FlashcardDto = Schema.Struct({
-  flashcards: Schema.Array(
+  items: Schema.Array(
     Schema.Struct({
       question: Schema.String,
       answer: Schema.String,
     }),
   ),
-  totalCount: Schema.Number,
+  total_count: Schema.Number,
   topic: Schema.String,
 })
 export type FlashcardDto = typeof FlashcardDto.Type
 
+export class Flashcard extends Schema.TaggedClass<Flashcard>('Flashcard')(
+  'Flashcard',
+  {
+    items: Schema.Array(
+      Schema.Struct({
+        answer: Schema.String,
+        question: Schema.String,
+      }),
+    ),
+    totalCount: Schema.Number,
+    topic: Schema.String,
+  },
+) {}
+
 export const ExamDto = Schema.Struct({
-  testQuestions: Schema.Array(
+  items: Schema.Array(
     Schema.Struct({
       question: Schema.String,
-      answerA: Schema.String,
-      answerB: Schema.String,
-      answerC: Schema.String,
-      answerD: Schema.String,
+      answers: Schema.Struct({
+        A: Schema.String,
+        B: Schema.String,
+        C: Schema.String,
+        D: Schema.String,
+      }),
       correct_answer: Schema.String,
+    }),
+  ),
+  total_count: Schema.Number,
+  topic: Schema.String,
+})
+export type ExamDto = typeof ExamDto.Type
+
+export class Exam extends Schema.TaggedClass<Exam>('Exam')('Exam', {
+  items: Schema.Array(
+    Schema.Struct({
+      question: Schema.String,
+      answers: Schema.Struct({
+        A: Schema.String,
+        B: Schema.String,
+        C: Schema.String,
+        D: Schema.String,
+      }),
+      correctAnswer: Schema.String,
     }),
   ),
   totalCount: Schema.Number,
   topic: Schema.String,
-})
-export type ExamDto = typeof ExamDto.Type
+}) {}

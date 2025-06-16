@@ -37,9 +37,9 @@ function FlashcardDetail() {
     )
   }
 
-  const currentCard = currentSet.flashcards[currentCardIndex]
+  const currentCard = currentSet.items[currentCardIndex]
   const isFirstCard = currentCardIndex === 0
-  const isLastCard = currentCardIndex === currentSet.flashcards.length - 1
+  const isLastCard = currentCardIndex === currentSet.items.length - 1
 
   const goToNextCard = () => {
     if (!isLastCard) {
@@ -73,7 +73,7 @@ function FlashcardDetail() {
         <div className="text-center">
           <h1 className="text-2xl font-bold">{currentSet.topic}</h1>
           <p className="text-muted-foreground">
-            {currentCardIndex + 1} of {currentSet.flashcards.length}
+            {currentCardIndex + 1} of {currentSet.items.length}
           </p>
         </div>
         <div className="w-24" /> {/* Spacer for centering */}
@@ -163,7 +163,7 @@ function FlashcardDetail() {
         <div
           className="bg-blue-600 h-2 rounded-full transition-all duration-300"
           style={{
-            width: `${((currentCardIndex + 1) / currentSet.flashcards.length) * 100}%`,
+            width: `${((currentCardIndex + 1) / currentSet.items.length) * 100}%`,
           }}
         />
       </div>

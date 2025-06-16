@@ -205,17 +205,17 @@ function WorkspaceOverview() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {set.flashcards.slice(0, 2).map((flashcard, cardIndex) => (
+                    {set.items.slice(0, 2).map((item, cardIndex) => (
                       <div
                         key={cardIndex}
                         className="p-3 bg-muted/30 rounded border"
                       >
                         <div className="space-y-2">
                           <div className="text-sm font-medium">
-                            Q: {flashcard.question}
+                            Q: {item.question}
                           </div>
                           <div className="text-sm text-muted-foreground">
-                            A: {flashcard.answer}
+                            A: {item.answer}
                           </div>
                         </div>
                       </div>
@@ -292,26 +292,27 @@ function WorkspaceOverview() {
                     </div>
                   </div>
                   <div className="space-y-3">
-                    {exam.testQuestions
-                      .slice(0, 2)
-                      .map((question, questionIndex) => (
-                        <div
-                          key={questionIndex}
-                          className="p-3 bg-muted/30 rounded border"
-                        >
-                          <div className="space-y-2">
-                            <div className="text-sm font-medium">
-                              {question.question}
-                            </div>
-                            <div className="text-xs text-muted-foreground grid grid-cols-2 gap-1">
-                              <span>A: {question.answerA}</span>
-                              <span>B: {question.answerB}</span>
-                              <span>C: {question.answerC}</span>
-                              <span>D: {question.answerD}</span>
-                            </div>
+                    {exam.items.slice(0, 2).map((item, questionIndex) => (
+                      <div
+                        key={questionIndex}
+                        className="p-3 bg-muted/30 rounded border"
+                      >
+                        <div className="space-y-2">
+                          <div className="text-sm font-medium">
+                            {item.question}
+                          </div>
+                          <div className="text-xs text-muted-foreground grid grid-cols-2 gap-1">
+                            {Object.entries(item.answers).map(
+                              ([key, value]) => (
+                                <span key={key}>
+                                  {key}: {value}
+                                </span>
+                              ),
+                            )}
                           </div>
                         </div>
-                      ))}
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

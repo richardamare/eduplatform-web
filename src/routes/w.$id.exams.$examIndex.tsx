@@ -37,62 +37,13 @@ function ExamDetail() {
     setShowResults(true)
   }
 
-  const getAnswerOptions = () => ['A', 'B', 'C', 'D']
-
-  const getAnswerText = (question: any, option: string) => {
-    let answerValue
-    switch (option) {
-      case 'A':
-      case 'answerA':
-        answerValue = question.answerA
-        break
-      case 'B':
-      case 'answerB':
-        answerValue = question.answerB
-        break
-      case 'C':
-      case 'answerC':
-        answerValue = question.answerC
-        break
-      case 'D':
-      case 'answerD':
-        answerValue = question.answerD
-        break
-      default:
-        return ''
-    }
-
-    // Handle case where answer might be an object with a text property
-    if (typeof answerValue === 'object' && answerValue?.text) {
-      return answerValue.text
-    }
-
-    return answerValue || ''
-  }
-
-  const getAnswerLetter = (question: any, option: string) => {
-    switch (option) {
-      case 'answerA':
-        return 'A'
-      case 'answerB':
-        return 'B'
-      case 'answerC':
-        return 'C'
-      case 'answerD':
-        return 'D'
-      default:
-        return ''
-    }
-  }
+  const answerOptions = ['A', 'B', 'C', 'D'] as const
 
   const isCorrectAnswer = (questionIndex: number, answer: string) => {
-    const correctAnswer =
-      currentExam.testQuestions[questionIndex].correct_answer
-    const correctAnswerLetter = getAnswerLetter(
-      currentExam.testQuestions[questionIndex],
-      correctAnswer,
-    )
-    return correctAnswerLetter === answer
+    const correctAnswer = currentExam.items[
+      questionIndex
+    ].correctAnswer.replace('answer', '')
+    return correctAnswer === answer
   }
 
   const getAnswerColor = (questionIndex: number, option: string) => {
@@ -122,7 +73,7 @@ function ExamDetail() {
     ).length
   }
 
-  const totalQuestions = currentExam?.testQuestions.length ?? 0
+  const totalQuestions = currentExam?.items.length ?? 0
   const correctAnswers = showResults ? getCorrectAnswersCount() : 0
 
   if (!currentExam) {
@@ -166,25 +117,19 @@ function ExamDetail() {
 
       {/* Questions */}
       <div className="space-y-8">
-        {currentExam.testQuestions.map((question, questionIndex) => (
-          <div
-            key={questionIndex}
-            className="bg-white border rounded-lg p-6 shadow-sm"
-          >
+        {currentExam.items.map((item, idx) => (
+          <div key={idx} className="bg-white border rounded-lg p-6 shadow-sm">
             <div className="space-y-4">
               <div className="flex items-start gap-3">
                 <span className="font-bold text-lg text-muted-foreground">
-                  {questionIndex + 1}.
+                  {idx + 1}.
                 </span>
                 <h3 className="text-lg font-medium leading-relaxed">
-                  {question.question}
+                  {item.question}
                 </h3>
                 {showResults && (
                   <div className="ml-auto">
-                    {isCorrectAnswer(
-                      questionIndex,
-                      selectedAnswers[questionIndex] || '',
-                    ) ? (
+                    {isCorrectAnswer(idx, selectedAnswers[idx] || '') ? (
                       <CheckCircle className="h-6 w-6 text-green-600" />
                     ) : (
                       <XCircle className="h-6 w-6 text-red-600" />
@@ -194,19 +139,19 @@ function ExamDetail() {
               </div>
 
               <div className="grid gap-3 pl-8">
-                {getAnswerOptions().map((option) => (
+                {answerOptions.map((option) => (
                   <button
                     key={option}
-                    onClick={() => handleAnswerSelect(questionIndex, option)}
+                    onClick={() => handleAnswerSelect(idx, option)}
                     disabled={showResults}
                     className={`text-left p-3 border rounded-lg transition-colors hover:bg-gray-50 ${getAnswerColor(
-                      questionIndex,
+                      idx,
                       option,
                     )} ${showResults ? 'cursor-default' : 'cursor-pointer'}`}
                   >
                     <div className="flex gap-3">
                       <span className="font-semibold">{option}.</span>
-                      <span>{getAnswerText(question, option)}</span>
+                      <span>{item.answers[option]}</span>
                     </div>
                   </button>
                 ))}
@@ -216,8 +161,15 @@ function ExamDetail() {
                 <div className="pl-8 pt-2 text-sm text-muted-foreground">
                   Correct answer:{' '}
                   <span className="font-semibold text-green-700">
-                    {getAnswerLetter(question, question.correct_answer)}){' '}
-                    {getAnswerText(question, question.correct_answer)}
+                    {item.correctAnswer.replace('answer', '')}){' '}
+                    {
+                      item.answers[
+                        item.correctAnswer.replace(
+                          'answer',
+                          '',
+                        ) as keyof typeof item.answers
+                      ]
+                    }
                   </span>
                 </div>
               )}

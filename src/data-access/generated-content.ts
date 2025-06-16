@@ -6,7 +6,7 @@ import {
   HttpClientRequest,
   HttpClientResponse,
 } from '@effect/platform'
-import { ExamDto, FlashcardDto } from '@/types/data-item'
+import { Exam, ExamDto, Flashcard, FlashcardDto } from '@/types/data-item'
 import {
   useMutation,
   useQuery,
@@ -29,6 +29,18 @@ export const generatedContentApi = {
         HttpClientResponse.schemaBodyJson(Schema.Array(FlashcardDto), {
           errors: 'all',
         }),
+      ),
+      Effect.map((res) =>
+        res.map((flashcard) =>
+          Flashcard.make({
+            items: flashcard.items.map((item) => ({
+              answer: item.answer,
+              question: item.question,
+            })),
+            totalCount: flashcard.total_count,
+            topic: flashcard.topic,
+          }),
+        ),
       ),
     )
   }),
@@ -68,6 +80,24 @@ export const generatedContentApi = {
           errors: 'all',
         }),
       ),
+      Effect.map((res) =>
+        res.map((exam) =>
+          Exam.make({
+            items: exam.items.map((item) => ({
+              question: item.question,
+              answers: {
+                A: item.answers.A,
+                B: item.answers.B,
+                C: item.answers.C,
+                D: item.answers.D,
+              },
+              correctAnswer: item.correct_answer,
+            })),
+            totalCount: exam.total_count,
+            topic: exam.topic,
+          }),
+        ),
+      ),
     )
   }),
 
@@ -104,7 +134,7 @@ export namespace GeneratedContentQueries {
   }
 
   export type FlashcardsQueryOptions = Omit<
-    UseQueryOptions<Array<FlashcardDto>, Error, Array<FlashcardDto>>,
+    UseQueryOptions<Array<Flashcard>, Error, Array<Flashcard>>,
     'queryKey' | 'queryFn'
   >
 
@@ -117,11 +147,9 @@ export namespace GeneratedContentQueries {
     return useQuery({
       queryKey: queryKeys.flashcards(workspaceId),
       queryFn: async () => {
-        const res = await generatedContentApi
+        return await generatedContentApi
           .getFlashcards(workspaceId)
           .pipe(runtime.runPromise)
-
-        return res as Array<FlashcardDto>
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
       ...options,
@@ -150,7 +178,7 @@ export namespace GeneratedContentQueries {
   }
 
   export type ExamsQueryOptions = Omit<
-    UseQueryOptions<Array<ExamDto>, Error, Array<ExamDto>>,
+    UseQueryOptions<Array<Exam>, Error, Array<Exam>>,
     'queryKey' | 'queryFn'
   >
 
@@ -163,11 +191,9 @@ export namespace GeneratedContentQueries {
     return useQuery({
       queryKey: queryKeys.exams(workspaceId),
       queryFn: async () => {
-        const res = await generatedContentApi
+        return await generatedContentApi
           .getExams(workspaceId)
           .pipe(runtime.runPromise)
-
-        return res as Array<ExamDto>
       },
       staleTime: 5 * 60 * 1000, // 5 minutes
       ...options,
